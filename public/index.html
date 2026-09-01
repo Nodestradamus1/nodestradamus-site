@@ -1,1 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>Nodestradamus Broadcast Terminal</title>
+
+	<style>
+
+		* {
+			box-sizing: border-box;
+		}
+
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			min-height: 100%;
+			background: #050505;
+			color: #d8d8d0;
+			font-family: "Courier New", monospace;
+		}
+
+		body {
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			overflow: hidden;
+		}
+
+
+		/* ============================================================
+		   MAIN TERMINAL
+		   ============================================================ */
+
+		.terminal {
+			width: 100%;
+			height: 100vh;
+
+			display: flex;
+			flex-direction: column;
+
+			align-items: center;
+			justify-content: center;
+
+			position: relative;
+		}
+
+
+		/* ============================================================
+		   HEADER
+		   ============================================================ */
+
+		.header {
+			position: absolute;
+
+			top: 32px;
+			left: 40px;
+			right: 40px;
+
+			display: flex;
+			justify-content: space-between;
+
+			font-size: 12px;
+			letter-spacing: 2px;
+		}
+
+		.signal {
+			opacity: 0.55;
+		}
+
+
+		/* ============================================================
+		   CRT PLACEHOLDER
+		   ============================================================ */
+
+		.computer {
+			width: min(70vw, 1000px);
+			aspect-ratio: 16 / 10;
+
+			background: #181816;
+
+			border: 2px solid #44443f;
+
+			padding: 40px;
+
+			position: relative;
+		}
+
+
+		.screen-frame {
+			width: 100%;
+			height: 100%;
+
+			background: #080808;
+
+			border: 4px solid #292925;
+
+			padding: 18px;
+		}
+
+
+		.screen {
+			width: 100%;
+			height: 100%;
+
+			position: relative;
+
+			overflow: hidden;
+
+			background:
+				radial-gradient(
+					ellipse at center,
+					#242822 0%,
+					#111310 55%,
+					#050505 100%
+				);
+
+			display: flex;
+
+			align-items: center;
+			justify-content: center;
+		}
+
+
+		/* CRT scanlines */
+
+		.screen::after {
+			content: "";
+
+			position: absolute;
+			inset: 0;
+
+			pointer-events: none;
+
+			background:
+				repeating-linear-gradient(
+					to bottom,
+					rgba(255,255,255,0.025) 0px,
+					rgba(255,255,255,0.025) 1px,
+					transparent 1px,
+					transparent 4px
+				);
+		}
+
+
+		/* ============================================================
+		   PROJECT
+		   ============================================================ */
+
+		.project {
+			text-align: center;
+			transition: opacity 0.15s ease;
+		}
+
+		.project-number {
+			font-size: 11px;
+			letter-spacing: 4px;
+			opacity: 0.45;
+
+			margin-bottom: 15px;
+		}
+
+		.project-title {
+			font-size: clamp(24px, 4vw, 56px);
+
+			letter-spacing: 6px;
+
+			margin: 0;
+		}
+
+		.project-type {
+			margin-top: 16px;
+
+			font-size: 12px;
+
+			letter-spacing: 3px;
+
+			opacity: 0.5;
+		}
+
+
+		/* ============================================================
+		   STATIC
+		   ============================================================ */
+
+		.static {
+			position: absolute;
+			inset: 0;
+
+			display: none;
+
+			z-index: 10;
+
+			background:
+				repeating-radial-gradient(
+					circle at center,
+					#fff 0px,
+					#000 1px,
+					#777 2px,
+					#111 3px
+				);
+
+			background-size: 5px 5px;
+
+			animation: staticNoise 0.06s steps(2) infinite;
+		}
+
+
+		.static.active {
+			display: block;
+		}
+
+
+		@keyframes staticNoise {
+
+			0% {
+				transform: translate(0, 0);
+			}
+
+			25% {
+				transform: translate(-3px, 2px);
+			}
+
+			50% {
+				transform: translate(2px, -2px);
+			}
+
+			75% {
+				transform: translate(-1px, 3px);
+			}
+
+			100% {
+				transform: translate(3px, -1px);
+			}
+
+		}
+
+
+		/* ============================================================
+		   NAVIGATION
+		   ============================================================ */
+
+		.nav-button {
+			position: absolute;
+
+			top: 50%;
+
+			transform: translateY(-50%);
+
+			width: 70px;
+			height: 100px;
+
+			border: none;
+
+			background: transparent;
+
+			color: #d8d8d0;
+
+			font-family: "Courier New", monospace;
+
+			font-size: 50px;
+
+			cursor: pointer;
+
+			opacity: 0.45;
+
+			transition:
+				opacity 0.2s ease,
+				transform 0.2s ease;
+		}
+
+
+		.nav-button:hover {
+			opacity: 1;
+		}
+
+
+		.nav-left {
+			left: 30px;
+		}
+
+
+		.nav-right {
+			right: 30px;
+		}
+
+
+		.nav-left:hover {
+			transform: translateY(-50%) translateX(-5px);
+		}
+
+
+		.nav-right:hover {
+			transform: translateY(-50%) translateX(5px);
+		}
+
+
+		/* ============================================================
+		   FOOTER
+		   ============================================================ */
+
+		.footer {
+			position: absolute;
+
+			bottom: 30px;
+
+			left: 40px;
+			right: 40px;
+
+			display: flex;
+
+			justify-content: space-between;
+
+			font-size: 11px;
+
+			letter-spacing: 2px;
+
+			opacity: 0.5;
+		}
+
+
+		/* ============================================================
+		   MOBILE
+		   ============================================================ */
+
+		@media (max-width: 700px) {
+
+			.computer {
+				width: 80vw;
+				padding: 15px;
+			}
+
+			.screen-frame {
+				padding: 8px;
+			}
+
+			.nav-button {
+				width: 45px;
+				font-size: 35px;
+			}
+
+			.nav-left {
+				left: 5px;
+			}
+
+			.nav-right {
+				right: 5px;
+			}
+
+			.header {
+				left: 20px;
+				right: 20px;
+			}
+
+			.footer {
+				left: 20px;
+				right: 20px;
+			}
+
+		}
+
+	</style>
+</head>
+
+
+<body>
+
+	<main class="terminal">
+
+		<header class="header">
+
+			<div>
+				NODESTRADAMUS INDUSTRIES
+			</div>
+
+			<div class="signal">
+				SIGNAL : ONLINE
+			</div>
+
+		</header>
+
+
+		<button
+			class="nav-button nav-left"
+			id="previousButton"
+			aria-label="Previous project"
+		>
+			‹
+		</button>
+
+
+		<section class="computer">
+
+			<div class="screen-frame">
+
+				<div class="screen">
+
+					<div
+						class="static"
+						id="static"
+					></div>
+
+
+					<div
+						class="project"
+						id="project"
+					>
+
+						<div
+							class="project-number"
+							id="projectNumber"
+						>
+							ARCHIVE 001
+						</div>
+
+
+						<h1
+							class="project-title"
+							id="projectTitle"
+						>
+							BROADCAST TERMINAL
+						</h1>
+
+
+						<div
+							class="project-type"
+							id="projectType"
+						>
+							VISUAL SYSTEM TEST
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+
+		</section>
+
+
+		<button
+			class="nav-button nav-right"
+			id="nextButton"
+			aria-label="Next project"
+		>
+			›
+		</button>
+
+
+		<footer class="footer">
+
+			<div>
+				NDS-BT / REV 0.1
+			</div>
+
+			<div id="counter">
+				01 / 03
+			</div>
+
+		</footer>
+
+	</main>
+
+
+	<script>
+
+		const projects = [
+
+			{
+				number: "ARCHIVE 001",
+				title: "BROADCAST TERMINAL",
+				type: "VISUAL SYSTEM TEST"
+			},
+
+			{
+				number: "ARCHIVE 002",
+				title: "CONCERT VISUALS",
+				type: "LIVE ENTERTAINMENT"
+			},
+
+			{
+				number: "ARCHIVE 003",
+				title: "EXPERIMENTAL",
+				type: "3D / TOUCHDESIGNER"
+			}
+
+		];
+
+
+		let currentProject = 0;
+		let changing = false;
+
+
+		const projectNumber =
+			document.getElementById("projectNumber");
+
+		const projectTitle =
+			document.getElementById("projectTitle");
+
+		const projectType =
+			document.getElementById("projectType");
+
+		const counter =
+			document.getElementById("counter");
+
+		const staticLayer =
+			document.getElementById("static");
+
+
+		function updateProject() {
+
+			const project =
+				projects[currentProject];
+
+
+			projectNumber.textContent =
+				project.number;
+
+			projectTitle.textContent =
+				project.title;
+
+			projectType.textContent =
+				project.type;
+
+
+			counter.textContent =
+				String(currentProject + 1).padStart(2, "0") +
+				" / " +
+				String(projects.length).padStart(2, "0");
+
+		}
+
+
+		function changeProject(direction) {
+
+			if (changing) {
+				return;
+			}
+
+
+			changing = true;
+
+
+			staticLayer.classList.add("active");
+
+
+			setTimeout(() => {
+
+				currentProject += direction;
+
+
+				if (currentProject >= projects.length) {
+					currentProject = 0;
+				}
+
+
+				if (currentProject < 0) {
+					currentProject = projects.length - 1;
+				}
+
+
+				updateProject();
+
+			}, 250);
+
+
+			setTimeout(() => {
+
+				staticLayer.classList.remove("active");
+
+				changing = false;
+
+			}, 550);
+
+		}
+
+
+		document
+			.getElementById("nextButton")
+			.addEventListener(
+				"click",
+				() => changeProject(1)
+			);
+
+
+		document
+			.getElementById("previousButton")
+			.addEventListener(
+				"click",
+				() => changeProject(-1)
+			);
+
+
+		document.addEventListener(
+			"keydown",
+			(event) => {
+
+				if (event.key === "ArrowRight") {
+					changeProject(1);
+				}
+
+				if (event.key === "ArrowLeft") {
+					changeProject(-1);
+				}
+
+			}
+		);
+
+	</script>
+
+</body>
+
+</html>
