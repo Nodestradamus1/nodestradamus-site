@@ -45,9 +45,6 @@
 
 		/* ============================================================
 		   FULL FRAME IMAGE LAYERS
-
-		   Every rendered image is 1920x1080 and occupies the exact
-		   same fullscreen coordinate system.
 		   ============================================================ */
 
 		.full-frame {
@@ -68,14 +65,10 @@
 		}
 
 
-		/* Main television / computer shell */
-
 		.shell-image {
 			z-index: 20;
 		}
 
-
-		/* Full-frame transparent button-state renders */
 
 		.button-state-image {
 			z-index: 25;
@@ -83,7 +76,7 @@
 
 
 		/* ============================================================
-		   CRT SCREEN CONTENT
+		   CRT SCREEN
 		   ============================================================ */
 
 		.screen-window {
@@ -264,12 +257,7 @@
 
 
 		/* ============================================================
-		   INVISIBLE HARDWARE BUTTON HITBOXES
-
-		   These contain NO artwork.
-
-		   They simply detect clicks over the physical buttons that are
-		   already rendered into the full-frame PNG overlays.
+		   INVISIBLE HARDWARE CLICK AREAS
 		   ============================================================ */
 
 		.hardware-hitbox {
@@ -278,6 +266,7 @@
 			z-index: 40;
 
 			border: none;
+
 			padding: 0;
 			margin: 0;
 
@@ -452,9 +441,7 @@
 
 
 	<!-- ============================================================
-	     MAIN SHELL
-
-	     Full 1920x1080 render with transparency.
+	     MAIN TV SHELL
 	     ============================================================ -->
 
 	<img
@@ -467,11 +454,7 @@
 
 
 	<!-- ============================================================
-	     LEFT BUTTON
-
-	     ALSO FULL 1920x1080.
-
-	     No positioning necessary.
+	     FULL FRAME LEFT BUTTON STATE
 	     ============================================================ -->
 
 	<img
@@ -484,11 +467,7 @@
 
 
 	<!-- ============================================================
-	     RIGHT BUTTON
-
-	     ALSO FULL 1920x1080.
-
-	     No positioning necessary.
+	     FULL FRAME RIGHT BUTTON STATE
 	     ============================================================ -->
 
 	<img
@@ -501,7 +480,7 @@
 
 
 	<!-- ============================================================
-	     INVISIBLE CLICK AREAS
+	     INVISIBLE BUTTON CLICK AREAS
 	     ============================================================ -->
 
 	<button
@@ -520,7 +499,7 @@
 
 
 	<!-- ============================================================
-	     UI TEXT
+	     HEADER
 	     ============================================================ -->
 
 	<header class="header">
@@ -536,10 +515,15 @@
 	</header>
 
 
+
+	<!-- ============================================================
+	     FOOTER
+	     ============================================================ -->
+
 	<footer class="footer">
 
 		<div>
-			NDS-BT / REV 0.7
+			NDS-BT / REV 0.8
 		</div>
 
 		<div id="counter">
@@ -554,7 +538,7 @@
 
 
 		/* ============================================================
-		   PROJECTS
+		   PROJECT DATA
 		   ============================================================ */
 
 		const projects = [
@@ -582,9 +566,9 @@
 
 
 		/* ============================================================
-		   BUTTON IMAGE FILES
+		   BUTTON STATE IMAGES
 
-		   ALL FOUR ARE FULL 1920x1080 PNGs.
+		   All four are full-frame 1920x1080 PNG overlays.
 		   ============================================================ */
 
 		const BUTTON_IMAGES = {
@@ -611,6 +595,87 @@
 			}
 
 		};
+
+
+
+		/* ============================================================
+		   BUTTON SOUND EFFECTS
+
+		   Stored in:
+		   public/audio/
+		   ============================================================ */
+
+		const BUTTON_SOUND_FILES = [
+
+			"audio/button-click-1.mp3",
+
+			"audio/button-click-2.mp3",
+
+			"audio/button-click-3.mp3",
+
+			"audio/button-click-4.mp3"
+
+		];
+
+
+		const buttonSounds =
+			BUTTON_SOUND_FILES.map(
+				(file) => {
+
+					const sound =
+						new Audio(file);
+
+					sound.preload =
+						"auto";
+
+					return sound;
+
+				}
+			);
+
+
+		let nextButtonSound = 0;
+
+
+
+		/* ============================================================
+		   PLAY NEXT BUTTON SOUND
+
+		   1 → 2 → 3 → 4 → repeat
+		   ============================================================ */
+
+		function playNextButtonSound() {
+
+
+			const sound =
+				buttonSounds[
+					nextButtonSound
+				];
+
+
+			sound.currentTime = 0;
+
+
+			sound
+				.play()
+				.catch(
+					() => {}
+				);
+
+
+			nextButtonSound++;
+
+
+			if (
+				nextButtonSound >=
+				buttonSounds.length
+			) {
+
+				nextButtonSound = 0;
+
+			}
+
+		}
 
 
 
@@ -696,9 +761,9 @@
 
 
 		/* ============================================================
-		   SCREEN POSITION
+		   CRT SCREEN POSITION
 
-		   Against original 1920x1080 render.
+		   Leaving this unchanged from the previous build.
 		   ============================================================ */
 
 		const SCREEN = {
@@ -714,19 +779,18 @@
 
 
 		/* ============================================================
-		   INVISIBLE CLICK AREAS
+		   NEW HARDWARE BUTTON CLICK LOCATIONS
 
-		   These are ONLY the clickable regions.
-
-		   They do not affect the rendered button images whatsoever.
+		   These are ONLY invisible mouse/touch hitboxes.
+		   They do not move the rendered PNGs.
 		   ============================================================ */
 
 		const LEFT_BUTTON = {
 
 			x: 660,
-			y: 900,
+			y: 895,
 
-			width: 100,
+			width: 115,
 			height: 90
 
 		};
@@ -734,10 +798,10 @@
 
 		const RIGHT_BUTTON = {
 
-			x: 1165,
-			y: 900,
+			x: 1148,
+			y: 895,
 
-			width: 100,
+			width: 115,
 			height: 90
 
 		};
@@ -768,15 +832,16 @@
 
 
 
-			const scale = Math.max(
+			const scale =
+				Math.max(
 
-				viewportWidth /
-				naturalWidth,
+					viewportWidth /
+						naturalWidth,
 
-				viewportHeight /
-				naturalHeight
+					viewportHeight /
+						naturalHeight
 
-			);
+				);
 
 
 
@@ -817,7 +882,7 @@
 
 
 		/* ============================================================
-		   POSITION A DOM ELEMENT FROM IMAGE COORDINATES
+		   POSITION A DOM ELEMENT USING 1920x1080 COORDINATES
 		   ============================================================ */
 
 		function applyRect(
@@ -876,10 +941,7 @@
 
 
 		/* ============================================================
-		   POSITION SCREEN + INVISIBLE HITBOXES
-
-		   Notice the actual button PNGs are NOT positioned here.
-		   They're already fullscreen.
+		   POSITION INTERFACE
 		   ============================================================ */
 
 		function positionInterface() {
@@ -1038,7 +1100,7 @@
 
 
 		/* ============================================================
-		   LEFT BUTTON
+		   LEFT HARDWARE BUTTON
 		   ============================================================ */
 
 		leftButtonHitbox.addEventListener(
@@ -1051,6 +1113,9 @@
 
 				leftButtonImage.src =
 					BUTTON_IMAGES.left.down;
+
+
+				playNextButtonSound();
 
 
 				if (
@@ -1102,7 +1167,7 @@
 
 
 		/* ============================================================
-		   RIGHT BUTTON
+		   RIGHT HARDWARE BUTTON
 		   ============================================================ */
 
 		rightButtonHitbox.addEventListener(
@@ -1115,6 +1180,9 @@
 
 				rightButtonImage.src =
 					BUTTON_IMAGES.right.down;
+
+
+				playNextButtonSound();
 
 
 				if (
@@ -1167,6 +1235,8 @@
 
 		/* ============================================================
 		   KEYBOARD
+
+		   Keyboard changes projects but DOES NOT play button sounds.
 		   ============================================================ */
 
 		document.addEventListener(
