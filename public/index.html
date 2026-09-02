@@ -108,7 +108,6 @@
 			content: "";
 
 			position: absolute;
-
 			inset: 0;
 
 			z-index: 20;
@@ -203,7 +202,6 @@
 
 		.static {
 			position: absolute;
-
 			inset: 0;
 
 			display: none;
@@ -460,7 +458,7 @@
 	<img
 		id="leftButtonImage"
 		class="full-frame button-state-image"
-		src="btn-left-up.png"
+		src="buttons/btn-left-up.png"
 		alt=""
 	>
 
@@ -473,7 +471,7 @@
 	<img
 		id="rightButtonImage"
 		class="full-frame button-state-image"
-		src="btn-right-up.png"
+		src="buttons/btn-right-up.png"
 		alt=""
 	>
 
@@ -523,7 +521,7 @@
 	<footer class="footer">
 
 		<div>
-			NDS-BT / REV 0.8
+			NDS-BT / REV 0.9
 		</div>
 
 		<div id="counter">
@@ -568,7 +566,8 @@
 		/* ============================================================
 		   BUTTON STATE IMAGES
 
-		   All four are full-frame 1920x1080 PNG overlays.
+		   These now live inside:
+		   public/buttons/
 		   ============================================================ */
 
 		const BUTTON_IMAGES = {
@@ -576,10 +575,10 @@
 			left: {
 
 				up:
-					"btn-left-up.png",
+					"buttons/btn-left-up.png",
 
 				down:
-					"btn-left-down.png"
+					"buttons/btn-left-down.png"
 
 			},
 
@@ -587,10 +586,10 @@
 			right: {
 
 				up:
-					"btn-right-up.png",
+					"buttons/btn-right-up.png",
 
 				down:
-					"btn-right-down.png"
+					"buttons/btn-right-down.png"
 
 			}
 
@@ -601,7 +600,7 @@
 		/* ============================================================
 		   BUTTON SOUND EFFECTS
 
-		   Stored in:
+		   Stored inside:
 		   public/audio/
 		   ============================================================ */
 
@@ -640,8 +639,6 @@
 
 		/* ============================================================
 		   PLAY NEXT BUTTON SOUND
-
-		   1 → 2 → 3 → 4 → repeat
 		   ============================================================ */
 
 		function playNextButtonSound() {
@@ -762,8 +759,6 @@
 
 		/* ============================================================
 		   CRT SCREEN POSITION
-
-		   Leaving this unchanged from the previous build.
 		   ============================================================ */
 
 		const SCREEN = {
@@ -779,10 +774,9 @@
 
 
 		/* ============================================================
-		   NEW HARDWARE BUTTON CLICK LOCATIONS
+		   HARDWARE BUTTON CLICK LOCATIONS
 
-		   These are ONLY invisible mouse/touch hitboxes.
-		   They do not move the rendered PNGs.
+		   These ONLY define the invisible clickable areas.
 		   ============================================================ */
 
 		const LEFT_BUTTON = {
@@ -882,7 +876,7 @@
 
 
 		/* ============================================================
-		   POSITION A DOM ELEMENT USING 1920x1080 COORDINATES
+		   POSITION FROM IMAGE COORDINATES
 		   ============================================================ */
 
 		function applyRect(
@@ -1100,7 +1094,7 @@
 
 
 		/* ============================================================
-		   LEFT HARDWARE BUTTON
+		   LEFT BUTTON
 		   ============================================================ */
 
 		leftButtonHitbox.addEventListener(
@@ -1167,7 +1161,7 @@
 
 
 		/* ============================================================
-		   RIGHT HARDWARE BUTTON
+		   RIGHT BUTTON
 		   ============================================================ */
 
 		rightButtonHitbox.addEventListener(
@@ -1236,7 +1230,7 @@
 		/* ============================================================
 		   KEYBOARD
 
-		   Keyboard changes projects but DOES NOT play button sounds.
+		   Still silent. Only hardware clicks play sounds.
 		   ============================================================ */
 
 		document.addEventListener(
