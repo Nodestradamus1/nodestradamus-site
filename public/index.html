@@ -2,16 +2,12 @@
 <html lang="en">
 
 <head>
-
 	<meta charset="UTF-8">
-
 	<meta
 		name="viewport"
 		content="width=device-width, initial-scale=1.0"
 	>
-
 	<title>Nodestradamus Broadcast Terminal</title>
-
 
 	<style>
 
@@ -27,14 +23,10 @@
 		body {
 			margin: 0;
 			padding: 0;
-
 			width: 100%;
 			height: 100%;
-
 			overflow: hidden;
-
 			background: #000;
-
 			font-family: "Courier New", monospace;
 		}
 
@@ -44,12 +36,30 @@
 
 
 		/* ============================================================
-		   FULLSCREEN BACKGROUND
+		   BACKGROUND
 		   ============================================================ */
 
-		.background-image {
+		.background {
 			position: absolute;
+			inset: 0;
+			z-index: 0;
 
+			background:
+				radial-gradient(
+					circle at center,
+					#3d3d3d 0%,
+					#232323 45%,
+					#0b0b0b 100%
+				);
+		}
+
+
+		/* ============================================================
+		   FULLSCREEN TERMINAL SHELL
+		   ============================================================ */
+
+		.shell-image {
+			position: absolute;
 			inset: 0;
 
 			width: 100%;
@@ -63,61 +73,72 @@
 			user-select: none;
 			pointer-events: none;
 
-			z-index: 0;
+			z-index: 20;
 		}
 
 
 		/* ============================================================
-		   CRT SCREEN
+		   SCREEN CONTENT WINDOW
 		   ============================================================ */
 
 		.screen-window {
 			position: absolute;
-
 			overflow: hidden;
 
-			z-index: 5;
+			z-index: 10;
 
 			display: flex;
 			align-items: center;
 			justify-content: center;
 
-			border-radius: 2.5% / 5%;
+			border-radius: 2.5% / 5.5%;
 
 			background:
 				radial-gradient(
 					ellipse at center,
-					rgba(80, 80, 80, 0.06) 0%,
-					rgba(30, 30, 30, 0.10) 75%,
-					rgba(0, 0, 0, 0.24) 100%
+					rgba(70, 70, 70, 0.08) 0%,
+					rgba(28, 28, 28, 0.16) 70%,
+					rgba(0, 0, 0, 0.30) 100%
 				);
 
 			box-shadow:
-				inset 0 0 35px rgba(0, 0, 0, 0.15),
-				inset 0 0 90px rgba(0, 0, 0, 0.10);
+				inset 0 0 40px rgba(0, 0, 0, 0.18),
+				inset 0 0 120px rgba(0, 0, 0, 0.16);
 		}
 
+		.screen-window::before {
+			content: "";
 
-		/* ============================================================
-		   CRT SCANLINES
-		   ============================================================ */
+			position: absolute;
+			inset: 0;
+
+			z-index: 18;
+			pointer-events: none;
+
+			background:
+				linear-gradient(
+					to bottom,
+					rgba(255, 255, 255, 0.05) 0%,
+					rgba(255, 255, 255, 0.01) 18%,
+					rgba(0, 0, 0, 0.02) 45%,
+					rgba(0, 0, 0, 0.14) 100%
+				);
+		}
 
 		.screen-window::after {
 			content: "";
 
 			position: absolute;
-
 			inset: 0;
 
-			z-index: 20;
-
+			z-index: 19;
 			pointer-events: none;
 
 			background:
 				repeating-linear-gradient(
 					to bottom,
-					rgba(255, 255, 255, 0.022) 0px,
-					rgba(255, 255, 255, 0.022) 1px,
+					rgba(255, 255, 255, 0.024) 0px,
+					rgba(255, 255, 255, 0.024) 1px,
 					transparent 1px,
 					transparent 4px
 				);
@@ -132,21 +153,19 @@
 
 		.screen-content {
 			position: relative;
+			z-index: 12;
 
 			width: 100%;
 			height: 100%;
-
-			z-index: 2;
 
 			display: flex;
 			align-items: center;
 			justify-content: center;
 
 			padding: 7%;
-
 			text-align: center;
 
-			color: #d8d8d8;
+			color: #dddddd;
 		}
 
 		.project {
@@ -155,41 +174,30 @@
 
 			text-shadow:
 				0 0 12px rgba(255, 255, 255, 0.08),
-				0 2px 8px rgba(0, 0, 0, 0.8);
+				0 2px 8px rgba(0, 0, 0, 0.85);
 
-			transition:
-				opacity 0.15s ease;
+			transition: opacity 0.15s ease;
 		}
 
 		.project-number {
 			margin-bottom: 18px;
-
 			font-size: clamp(10px, 0.8vw, 14px);
-
 			letter-spacing: 4px;
-
 			opacity: 0.58;
 		}
 
 		.project-title {
 			margin: 0;
-
 			font-size: clamp(26px, 3vw, 56px);
-
 			line-height: 1;
-
 			letter-spacing: 5px;
-
 			font-weight: normal;
 		}
 
 		.project-type {
 			margin-top: 18px;
-
 			font-size: clamp(10px, 0.8vw, 14px);
-
 			letter-spacing: 3px;
-
 			opacity: 0.62;
 		}
 
@@ -200,12 +208,11 @@
 
 		.static {
 			position: absolute;
-
 			inset: 0;
 
 			display: none;
 
-			z-index: 15;
+			z-index: 17;
 
 			background:
 				repeating-radial-gradient(
@@ -218,8 +225,7 @@
 
 			background-size: 5px 5px;
 
-			animation:
-				staticNoise 0.055s steps(2) infinite;
+			animation: staticNoise 0.055s steps(2) infinite;
 		}
 
 		.static.active {
@@ -252,7 +258,7 @@
 
 
 		/* ============================================================
-		   HEADER
+		   HEADER / FOOTER
 		   ============================================================ */
 
 		.header {
@@ -262,7 +268,7 @@
 			left: 36px;
 			right: 36px;
 
-			z-index: 30;
+			z-index: 40;
 
 			display: flex;
 			align-items: center;
@@ -271,7 +277,6 @@
 			color: #cfcfcf;
 
 			font-size: 12px;
-
 			letter-spacing: 2px;
 
 			pointer-events: none;
@@ -284,11 +289,6 @@
 			opacity: 0.65;
 		}
 
-
-		/* ============================================================
-		   FOOTER
-		   ============================================================ */
-
 		.footer {
 			position: absolute;
 
@@ -296,7 +296,7 @@
 			left: 36px;
 			right: 36px;
 
-			z-index: 30;
+			z-index: 40;
 
 			display: flex;
 			align-items: center;
@@ -305,9 +305,7 @@
 			color: #cfcfcf;
 
 			font-size: 11px;
-
 			letter-spacing: 2px;
-
 			opacity: 0.65;
 
 			pointer-events: none;
@@ -318,65 +316,28 @@
 
 
 		/* ============================================================
-		   NAVIGATION
+		   HARDWARE BUTTONS
 		   ============================================================ */
 
-		.nav-button {
+		.hardware-button {
 			position: absolute;
 
-			top: 50%;
-
-			transform: translateY(-50%);
-
-			z-index: 40;
-
-			width: 72px;
-			height: 110px;
-
+			padding: 0;
+			margin: 0;
 			border: none;
-
 			background: transparent;
-
-			color: #cfcfcf;
-
-			font-family: "Courier New", monospace;
-
-			font-size: 64px;
-
 			cursor: pointer;
 
-			opacity: 0.48;
-
-			text-shadow:
-				0 3px 12px rgba(0, 0, 0, 0.85);
-
-			transition:
-				opacity 0.2s ease,
-				transform 0.2s ease;
+			z-index: 30;
 		}
 
-		.nav-button:hover {
-			opacity: 1;
-		}
-
-		.nav-left {
-			left: 24px;
-		}
-
-		.nav-right {
-			right: 24px;
-		}
-
-		.nav-left:hover {
-			transform:
-				translateY(-50%)
-				translateX(-6px);
-		}
-
-		.nav-right:hover {
-			transform:
-				translateY(-50%)
-				translateX(6px);
+		.hardware-button img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+			pointer-events: none;
+			user-select: none;
 		}
 
 
@@ -390,7 +351,6 @@
 				top: 16px;
 				left: 16px;
 				right: 16px;
-
 				font-size: 9px;
 			}
 
@@ -398,22 +358,7 @@
 				bottom: 16px;
 				left: 16px;
 				right: 16px;
-
 				font-size: 9px;
-			}
-
-			.nav-button {
-				width: 40px;
-
-				font-size: 40px;
-			}
-
-			.nav-left {
-				left: 2px;
-			}
-
-			.nav-right {
-				right: 2px;
 			}
 
 			.project-number {
@@ -427,54 +372,36 @@
 		}
 
 	</style>
-
 </head>
-
 
 <body>
 
+	<div class="background"></div>
 
 	<!-- ============================================================
-	     FULLSCREEN TERMINAL RENDER
-	     ============================================================ -->
-
-	<img
-		id="backgroundImage"
-		class="background-image"
-		src="tv-test4_16_9.png"
-		alt=""
-	>
-
-
-	<!-- ============================================================
-	     CRT SCREEN CONTENT
+	     SCREEN CONTENT SITS UNDER THE SHELL
 	     ============================================================ -->
 
 	<div
 		id="screenWindow"
 		class="screen-window"
 	>
-
 		<div
 			id="static"
 			class="static"
 		></div>
 
-
 		<div class="screen-content">
-
 			<div
 				id="project"
 				class="project"
 			>
-
 				<div
 					id="projectNumber"
 					class="project-number"
 				>
 					ARCHIVE 001
 				</div>
-
 
 				<h1
 					id="projectTitle"
@@ -483,419 +410,368 @@
 					BROADCAST TERMINAL
 				</h1>
 
-
 				<div
 					id="projectType"
 					class="project-type"
 				>
 					VISUAL SYSTEM TEST
 				</div>
-
 			</div>
-
 		</div>
-
 	</div>
 
 
 	<!-- ============================================================
-	     HEADER
-	     ============================================================ -->
-
-	<header class="header">
-
-		<div>
-			NODESTRADAMUS INDUSTRIES
-		</div>
-
-		<div class="signal">
-			SIGNAL : ONLINE
-		</div>
-
-	</header>
-
-
-	<!-- ============================================================
-	     NAVIGATION
+	     HARDWARE PAGE BUTTONS
 	     ============================================================ -->
 
 	<button
-		class="nav-button nav-left"
-		id="previousButton"
+		id="leftButton"
+		class="hardware-button"
 		aria-label="Previous project"
 	>
-		‹
+		<img
+			id="leftButtonImage"
+			src="btn-left-up.png"
+			alt=""
+		>
 	</button>
 
-
 	<button
-		class="nav-button nav-right"
-		id="nextButton"
+		id="rightButton"
+		class="hardware-button"
 		aria-label="Next project"
 	>
-		›
+		<img
+			id="rightButtonImage"
+			src="btn-right-up.png"
+			alt=""
+		>
 	</button>
 
 
 	<!-- ============================================================
-	     FOOTER
+	     TERMINAL SHELL WITH ALPHA
 	     ============================================================ -->
 
+	<img
+		id="shellImage"
+		class="shell-image"
+		src="tv-shell.png"
+		alt=""
+	>
+
+
+	<header class="header">
+		<div>NODESTRADAMUS INDUSTRIES</div>
+		<div class="signal">SIGNAL : ONLINE</div>
+	</header>
+
 	<footer class="footer">
-
-		<div>
-			NDS-BT / REV 0.5
-		</div>
-
-		<div id="counter">
-			01 / 03
-		</div>
-
+		<div>NDS-BT / REV 0.6</div>
+		<div id="counter">01 / 03</div>
 	</footer>
 
 
-
 	<script>
-
 
 		/* ============================================================
 		   PROJECT DATA
 		   ============================================================ */
 
 		const projects = [
-
 			{
 				number: "ARCHIVE 001",
 				title: "BROADCAST TERMINAL",
 				type: "VISUAL SYSTEM TEST"
 			},
-
 			{
 				number: "ARCHIVE 002",
 				title: "CONCERT VISUALS",
 				type: "LIVE ENTERTAINMENT"
 			},
-
 			{
 				number: "ARCHIVE 003",
 				title: "EXPERIMENTAL",
 				type: "3D / TOUCHDESIGNER"
 			}
-
 		];
 
+
+		/* ============================================================
+		   ELEMENTS
+		   ============================================================ */
 
 		let currentProject = 0;
 		let changing = false;
 
+		const shellImage = document.getElementById("shellImage");
+		const screenWindow = document.getElementById("screenWindow");
+		const staticLayer = document.getElementById("static");
 
-		const backgroundImage =
-			document.getElementById("backgroundImage");
+		const projectNumber = document.getElementById("projectNumber");
+		const projectTitle = document.getElementById("projectTitle");
+		const projectType = document.getElementById("projectType");
+		const counter = document.getElementById("counter");
 
+		const leftButton = document.getElementById("leftButton");
+		const rightButton = document.getElementById("rightButton");
 
-		const screenWindow =
-			document.getElementById("screenWindow");
-
-
-		const projectNumber =
-			document.getElementById("projectNumber");
-
-
-		const projectTitle =
-			document.getElementById("projectTitle");
-
-
-		const projectType =
-			document.getElementById("projectType");
-
-
-		const counter =
-			document.getElementById("counter");
-
-
-		const staticLayer =
-			document.getElementById("static");
-
+		const leftButtonImage = document.getElementById("leftButtonImage");
+		const rightButtonImage = document.getElementById("rightButtonImage");
 
 
 		/* ============================================================
-		   NEW CRT POSITION
-
-		   Measured against your new 1920 x 1080 render.
+		   ASSET PATHS
 		   ============================================================ */
 
-		const SCREEN = {
-
-			x: 463,
-			y: 214,
-
-			width: 993,
-			height: 456
-
+		const BUTTON_IMAGES = {
+			left: {
+				up: "btn-left-up.png",
+				down: "btn-left-down.png"
+			},
+			right: {
+				up: "btn-right-up.png",
+				down: "btn-right-down.png"
+			}
 		};
 
 
-
 		/* ============================================================
-		   POSITION SCREEN OVER FULLSCREEN IMAGE
-
-		   This exactly follows object-fit: cover.
+		   COORDINATES
+		   Measured against the ORIGINAL 1920x1080 shell render.
+		   Tweak only these if needed.
 		   ============================================================ */
 
-		function positionScreen() {
+		const SCREEN = {
+			x: 462,
+			y: 214,
+			width: 995,
+			height: 457
+		};
+
+		const LEFT_BUTTON_RECT = {
+			x: 648,
+			y: 890,
+			width: 121,
+			height: 104
+		};
+
+		const RIGHT_BUTTON_RECT = {
+			x: 1153,
+			y: 890,
+			width: 121,
+			height: 104
+		};
 
 
-			const naturalWidth =
-				backgroundImage.naturalWidth || 1920;
+		/* ============================================================
+		   POSITION HELPERS
+		   Keeps overlays locked to the shell image when object-fit: cover
+		   scales/crops the 1920x1080 render.
+		   ============================================================ */
 
+		function getCoverFitMetrics() {
 
-			const naturalHeight =
-				backgroundImage.naturalHeight || 1080;
+			const naturalWidth = shellImage.naturalWidth || 1920;
+			const naturalHeight = shellImage.naturalHeight || 1080;
 
-
-			const viewportWidth =
-				window.innerWidth;
-
-
-			const viewportHeight =
-				window.innerHeight;
-
-
+			const viewportWidth = window.innerWidth;
+			const viewportHeight = window.innerHeight;
 
 			const scale = Math.max(
-
 				viewportWidth / naturalWidth,
-
 				viewportHeight / naturalHeight
-
 			);
 
+			const renderedWidth = naturalWidth * scale;
+			const renderedHeight = naturalHeight * scale;
 
+			const offsetX = (viewportWidth - renderedWidth) / 2;
+			const offsetY = (viewportHeight - renderedHeight) / 2;
 
-			const renderedWidth =
-				naturalWidth * scale;
-
-
-			const renderedHeight =
-				naturalHeight * scale;
-
-
-
-			const offsetX =
-				(viewportWidth - renderedWidth) / 2;
-
-
-			const offsetY =
-				(viewportHeight - renderedHeight) / 2;
-
-
-
-			screenWindow.style.left =
-				(offsetX + SCREEN.x * scale) + "px";
-
-
-			screenWindow.style.top =
-				(offsetY + SCREEN.y * scale) + "px";
-
-
-			screenWindow.style.width =
-				(SCREEN.width * scale) + "px";
-
-
-			screenWindow.style.height =
-				(SCREEN.height * scale) + "px";
+			return {
+				scale,
+				offsetX,
+				offsetY
+			};
 
 		}
 
+		function applyRect(element, rect) {
 
+			const fit = getCoverFitMetrics();
 
-		backgroundImage.addEventListener(
-			"load",
-			positionScreen
-		);
+			element.style.left =
+				(fit.offsetX + rect.x * fit.scale) + "px";
 
+			element.style.top =
+				(fit.offsetY + rect.y * fit.scale) + "px";
 
-		window.addEventListener(
-			"resize",
-			positionScreen
-		);
+			element.style.width =
+				(rect.width * fit.scale) + "px";
 
+			element.style.height =
+				(rect.height * fit.scale) + "px";
 
-		positionScreen();
+		}
 
+		function positionAllOverlays() {
+			applyRect(screenWindow, SCREEN);
+			applyRect(leftButton, LEFT_BUTTON_RECT);
+			applyRect(rightButton, RIGHT_BUTTON_RECT);
+		}
 
 
 		/* ============================================================
-		   PROJECT UPDATE
+		   PROJECT DISPLAY
 		   ============================================================ */
 
 		function updateProject() {
 
+			const project = projects[currentProject];
 
-			const project =
-				projects[currentProject];
-
-
-			projectNumber.textContent =
-				project.number;
-
-
-			projectTitle.textContent =
-				project.title;
-
-
-			projectType.textContent =
-				project.type;
-
+			projectNumber.textContent = project.number;
+			projectTitle.textContent = project.title;
+			projectType.textContent = project.type;
 
 			counter.textContent =
-
-				String(
-					currentProject + 1
-				).padStart(2, "0")
-
-				+
-
-				" / "
-
-				+
-
-				String(
-					projects.length
-				).padStart(2, "0");
+				String(currentProject + 1).padStart(2, "0") +
+				" / " +
+				String(projects.length).padStart(2, "0");
 
 		}
 
 
-
 		/* ============================================================
-		   PROJECT CHANGE
+		   STATIC PAGE CHANGE
 		   ============================================================ */
 
 		function changeProject(direction) {
-
 
 			if (changing) {
 				return;
 			}
 
-
 			changing = true;
-
-
-			staticLayer.classList.add(
-				"active"
-			);
-
-
+			staticLayer.classList.add("active");
 
 			setTimeout(() => {
-
 
 				currentProject += direction;
 
-
-				if (
-					currentProject >= projects.length
-				) {
-
+				if (currentProject >= projects.length) {
 					currentProject = 0;
-
 				}
 
-
-				if (
-					currentProject < 0
-				) {
-
-					currentProject =
-						projects.length - 1;
-
+				if (currentProject < 0) {
+					currentProject = projects.length - 1;
 				}
-
 
 				updateProject();
 
-
 			}, 250);
 
-
-
 			setTimeout(() => {
-
-
-				staticLayer.classList.remove(
-					"active"
-				);
-
-
+				staticLayer.classList.remove("active");
 				changing = false;
-
-
 			}, 550);
 
 		}
 
 
-
 		/* ============================================================
-		   BUTTON INPUT
+		   HARDWARE BUTTON STATE
+		   We trigger the page change on pointerdown so the button can
+		   visually stay pressed until pointerup.
 		   ============================================================ */
 
-		document
-			.getElementById("nextButton")
-			.addEventListener(
-				"click",
-				() => changeProject(1)
-			);
+		function setButtonState(side, pressed) {
 
-
-		document
-			.getElementById("previousButton")
-			.addEventListener(
-				"click",
-				() => changeProject(-1)
-			);
-
-
-
-		/* ============================================================
-		   KEYBOARD INPUT
-		   ============================================================ */
-
-		document.addEventListener(
-			"keydown",
-			(event) => {
-
-
-				if (
-					event.key === "ArrowRight"
-				) {
-
-					changeProject(1);
-
-				}
-
-
-				if (
-					event.key === "ArrowLeft"
-				) {
-
-					changeProject(-1);
-
-				}
-
-
+			if (side === "left") {
+				leftButtonImage.src = pressed
+					? BUTTON_IMAGES.left.down
+					: BUTTON_IMAGES.left.up;
 			}
-		);
+
+			if (side === "right") {
+				rightButtonImage.src = pressed
+					? BUTTON_IMAGES.right.down
+					: BUTTON_IMAGES.right.up;
+			}
+
+		}
+
+		function attachHardwareButton(buttonElement, side, direction) {
+
+			let isPressed = false;
+
+			buttonElement.addEventListener("pointerdown", (event) => {
+
+				event.preventDefault();
+
+				if (isPressed) {
+					return;
+				}
+
+				isPressed = true;
+				setButtonState(side, true);
+
+				if (buttonElement.setPointerCapture) {
+					buttonElement.setPointerCapture(event.pointerId);
+				}
+
+				changeProject(direction);
+
+			});
+
+			function releaseButton() {
+				if (!isPressed) {
+					return;
+				}
+
+				isPressed = false;
+				setButtonState(side, false);
+			}
+
+			buttonElement.addEventListener("pointerup", releaseButton);
+			buttonElement.addEventListener("pointercancel", releaseButton);
+			buttonElement.addEventListener("lostpointercapture", releaseButton);
+
+		}
+
+		attachHardwareButton(leftButton, "left", -1);
+		attachHardwareButton(rightButton, "right", 1);
 
 
+		/* ============================================================
+		   KEYBOARD SUPPORT
+		   ============================================================ */
+
+		document.addEventListener("keydown", (event) => {
+
+			if (event.key === "ArrowRight") {
+				changeProject(1);
+			}
+
+			if (event.key === "ArrowLeft") {
+				changeProject(-1);
+			}
+
+		});
+
+
+		/* ============================================================
+		   INIT
+		   ============================================================ */
+
+		shellImage.addEventListener("load", positionAllOverlays);
+		window.addEventListener("resize", positionAllOverlays);
 
 		updateProject();
-
+		positionAllOverlays();
 
 	</script>
-
 
 </body>
 
