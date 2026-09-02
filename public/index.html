@@ -2,211 +2,194 @@
 <html lang="en">
 
 <head>
+
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<meta
+		name="viewport"
+		content="width=device-width, initial-scale=1.0"
+	>
 
 	<title>Nodestradamus Broadcast Terminal</title>
 
+
 	<style>
 
-		:root {
-			--bg: #a58fab;
-			--text: #ece6da;
-			--muted: rgba(236, 230, 218, 0.58);
-			--border: rgba(236, 230, 218, 0.18);
-
-			/* SCREEN FIT FOR YOUR TEST IMAGE */
-			--screen-left: 29.6%;
-			--screen-top: 16.1%;
-			--screen-width: 40.8%;
-			--screen-height: 58.3%;
-		}
+		/* ============================================================
+		   GLOBAL
+		   ============================================================ */
 
 		* {
 			box-sizing: border-box;
 		}
 
+
 		html,
 		body {
 			margin: 0;
 			padding: 0;
+
 			width: 100%;
-			min-height: 100%;
-			background: var(--bg);
-			color: var(--text);
+			height: 100%;
+
+			overflow: hidden;
+
+			background: #000;
+
 			font-family: "Courier New", monospace;
 		}
 
+
 		body {
-			min-height: 100vh;
-			overflow: hidden;
+			position: relative;
 		}
 
-		.site-shell {
-			position: relative;
-			min-height: 100vh;
-			width: 100%;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 32px 24px;
-		}
 
 		/* ============================================================
-		   HEADER / FOOTER
+		   FULLSCREEN BACKGROUND IMAGE
 		   ============================================================ */
 
-		.header,
-		.footer {
+		.background-image {
 			position: absolute;
-			left: 40px;
-			right: 40px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			font-size: 12px;
-			letter-spacing: 2px;
-			z-index: 20;
-			pointer-events: none;
-			text-shadow: 0 0 12px rgba(0, 0, 0, 0.45);
-		}
 
-		.header {
-			top: 28px;
-		}
+			inset: 0;
 
-		.footer {
-			bottom: 28px;
-		}
-
-		.signal,
-		.footer div:last-child {
-			opacity: 0.7;
-		}
-
-		/* ============================================================
-		   MAIN TV AREA
-		   ============================================================ */
-
-		.terminal-stage {
-			position: relative;
-			width: min(94vw, 1500px);
-		}
-
-		.terminal-visual {
-			position: relative;
 			width: 100%;
-		}
+			height: 100%;
 
-		.terminal-image {
+			object-fit: cover;
+			object-position: center;
+
 			display: block;
-			width: 100%;
-			height: auto;
+
 			user-select: none;
 			pointer-events: none;
+
+			z-index: 0;
 		}
 
+
 		/* ============================================================
-		   SCREEN OVERLAY
+		   CRT SCREEN
 		   ============================================================ */
 
 		.screen-window {
 			position: absolute;
-			left: var(--screen-left);
-			top: var(--screen-top);
-			width: var(--screen-width);
-			height: var(--screen-height);
 
-			border-radius: 5.5% / 7%;
 			overflow: hidden;
+
+			border-radius: 7% / 9%;
+
+			z-index: 5;
 
 			display: flex;
 			align-items: center;
 			justify-content: center;
-
-			padding: clamp(18px, 2vw, 28px);
 
 			background:
 				radial-gradient(
 					ellipse at center,
-					rgba(206, 185, 219, 0.28) 0%,
-					rgba(109, 87, 123, 0.30) 42%,
-					rgba(34, 26, 39, 0.60) 100%
+					rgba(140, 122, 150, 0.10) 0%,
+					rgba(70, 55, 80, 0.18) 60%,
+					rgba(10, 8, 12, 0.35) 100%
 				);
+
 			box-shadow:
-				inset 0 0 35px rgba(0, 0, 0, 0.35),
-				inset 0 0 80px rgba(0, 0, 0, 0.22);
+				inset 0 0 40px rgba(0, 0, 0, 0.18),
+				inset 0 0 100px rgba(0, 0, 0, 0.12);
 		}
 
-		.screen-window::before {
-			content: "";
-			position: absolute;
-			inset: 0;
-			pointer-events: none;
-			background:
-				linear-gradient(
-					to bottom,
-					rgba(255, 255, 255, 0.08) 0%,
-					rgba(255, 255, 255, 0.02) 12%,
-					rgba(0, 0, 0, 0.02) 45%,
-					rgba(0, 0, 0, 0.12) 100%
-				);
-			mix-blend-mode: screen;
-		}
+
+		/* CRT scanlines */
 
 		.screen-window::after {
 			content: "";
+
 			position: absolute;
 			inset: 0;
+
 			pointer-events: none;
+
+			z-index: 20;
+
 			background:
 				repeating-linear-gradient(
 					to bottom,
-					rgba(255, 255, 255, 0.035) 0px,
-					rgba(255, 255, 255, 0.035) 1px,
+					rgba(255, 255, 255, 0.025) 0px,
+					rgba(255, 255, 255, 0.025) 1px,
 					transparent 1px,
 					transparent 4px
 				);
-			opacity: 0.7;
 		}
+
+
+		/* ============================================================
+		   PROJECT CONTENT
+		   ============================================================ */
 
 		.screen-content {
 			position: relative;
-			z-index: 2;
+
 			width: 100%;
 			height: 100%;
+
+			z-index: 2;
+
 			display: flex;
 			align-items: center;
 			justify-content: center;
+
+			padding: 7%;
+
 			text-align: center;
+
+			color: #eee8dd;
 		}
+
 
 		.project {
-			transition: opacity 0.15s ease;
 			max-width: 90%;
-			text-shadow: 0 0 18px rgba(0, 0, 0, 0.5);
+
+			text-shadow:
+				0 2px 10px rgba(0, 0, 0, 0.5);
+
+			transition:
+				opacity 0.15s ease;
 		}
 
+
 		.project-number {
-			font-size: clamp(11px, 1vw, 13px);
+			margin-bottom: 18px;
+
+			font-size: clamp(10px, 0.8vw, 14px);
+
 			letter-spacing: 4px;
+
 			opacity: 0.65;
-			margin-bottom: 16px;
 		}
+
 
 		.project-title {
 			margin: 0;
-			font-size: clamp(24px, 3.2vw, 52px);
+
+			font-size: clamp(24px, 3.1vw, 58px);
+
+			line-height: 1;
+
 			letter-spacing: 5px;
-			line-height: 1.04;
 		}
 
+
 		.project-type {
-			margin-top: 16px;
-			font-size: clamp(11px, 1vw, 14px);
+			margin-top: 18px;
+
+			font-size: clamp(10px, 0.8vw, 14px);
+
 			letter-spacing: 3px;
-			opacity: 0.72;
+
+			opacity: 0.7;
 		}
+
 
 		/* ============================================================
 		   STATIC
@@ -214,216 +197,376 @@
 
 		.static {
 			position: absolute;
+
 			inset: 0;
+
 			display: none;
-			z-index: 10;
+
+			z-index: 15;
+
 			background:
 				repeating-radial-gradient(
 					circle at center,
 					#ffffff 0px,
-					#111111 1px,
-					#868686 2px,
-					#000000 3px
+					#000000 1px,
+					#777777 2px,
+					#111111 3px
 				);
+
 			background-size: 5px 5px;
-			animation: staticNoise 0.06s steps(2) infinite;
+
+			animation:
+				staticNoise 0.06s steps(2) infinite;
 		}
+
 
 		.static.active {
 			display: block;
 		}
 
+
 		@keyframes staticNoise {
-			0% { transform: translate(0, 0); }
-			25% { transform: translate(-3px, 2px); }
-			50% { transform: translate(2px, -2px); }
-			75% { transform: translate(-1px, 3px); }
-			100% { transform: translate(3px, -1px); }
+
+			0% {
+				transform: translate(0, 0);
+			}
+
+			25% {
+				transform: translate(-4px, 2px);
+			}
+
+			50% {
+				transform: translate(3px, -3px);
+			}
+
+			75% {
+				transform: translate(-2px, 4px);
+			}
+
+			100% {
+				transform: translate(4px, -2px);
+			}
+
 		}
 
+
 		/* ============================================================
-		   NAV
+		   HEADER
+		   ============================================================ */
+
+		.header {
+			position: absolute;
+
+			top: 28px;
+			left: 36px;
+			right: 36px;
+
+			z-index: 30;
+
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+
+			color: #eee8dd;
+
+			font-size: 12px;
+
+			letter-spacing: 2px;
+
+			pointer-events: none;
+
+			text-shadow:
+				0 2px 8px rgba(0, 0, 0, 0.6);
+		}
+
+
+		.signal {
+			opacity: 0.7;
+		}
+
+
+		/* ============================================================
+		   FOOTER
+		   ============================================================ */
+
+		.footer {
+			position: absolute;
+
+			bottom: 28px;
+			left: 36px;
+			right: 36px;
+
+			z-index: 30;
+
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+
+			color: #eee8dd;
+
+			font-size: 11px;
+
+			letter-spacing: 2px;
+
+			opacity: 0.7;
+
+			pointer-events: none;
+
+			text-shadow:
+				0 2px 8px rgba(0, 0, 0, 0.6);
+		}
+
+
+		/* ============================================================
+		   NAVIGATION
 		   ============================================================ */
 
 		.nav-button {
 			position: absolute;
-			top: 43%;
+
+			top: 50%;
+
 			transform: translateY(-50%);
-			width: 72px;
-			height: 96px;
-			border: 1px solid var(--border);
-			background: rgba(20, 14, 22, 0.18);
-			backdrop-filter: blur(4px);
-			color: var(--text);
+
+			z-index: 40;
+
+			width: 70px;
+			height: 110px;
+
+			border: none;
+
+			background: transparent;
+
+			color: #eee8dd;
+
 			font-family: "Courier New", monospace;
-			font-size: 50px;
-			line-height: 1;
+
+			font-size: 64px;
+
 			cursor: pointer;
-			opacity: 0.72;
+
+			opacity: 0.55;
+
+			text-shadow:
+				0 3px 12px rgba(0, 0, 0, 0.7);
+
 			transition:
-				transform 0.18s ease,
-				opacity 0.18s ease,
-				background 0.18s ease;
-			z-index: 15;
+				opacity 0.2s ease,
+				transform 0.2s ease;
 		}
+
 
 		.nav-button:hover {
 			opacity: 1;
-			background: rgba(20, 14, 22, 0.34);
 		}
+
 
 		.nav-left {
-			left: 6%;
-			border-radius: 12px;
+			left: 24px;
 		}
+
 
 		.nav-right {
-			right: 6%;
-			border-radius: 12px;
+			right: 24px;
 		}
+
 
 		.nav-left:hover {
-			transform: translateY(-50%) translateX(-4px);
+			transform:
+				translateY(-50%)
+				translateX(-6px);
 		}
 
+
 		.nav-right:hover {
-			transform: translateY(-50%) translateX(4px);
+			transform:
+				translateY(-50%)
+				translateX(6px);
 		}
+
 
 		/* ============================================================
 		   MOBILE
 		   ============================================================ */
 
-		@media (max-width: 900px) {
+		@media (max-width: 700px) {
 
-			.header,
+			.header {
+				top: 16px;
+				left: 16px;
+				right: 16px;
+
+				font-size: 9px;
+			}
+
+
 			.footer {
-				left: 18px;
-				right: 18px;
-				font-size: 10px;
-				letter-spacing: 1.5px;
+				bottom: 16px;
+				left: 16px;
+				right: 16px;
+
+				font-size: 9px;
 			}
 
-			.site-shell {
-				padding: 70px 10px;
-			}
-
-			.terminal-stage {
-				width: 100%;
-			}
 
 			.nav-button {
-				width: 44px;
-				height: 62px;
-				font-size: 30px;
-				top: 44%;
+				width: 40px;
+
+				font-size: 40px;
 			}
+
 
 			.nav-left {
-				left: 1%;
+				left: 2px;
 			}
+
 
 			.nav-right {
-				right: 1%;
+				right: 2px;
 			}
 
-			.project-title {
-				letter-spacing: 3px;
+
+			.project-number {
+				margin-bottom: 8px;
 			}
 
-			.project-number,
+
 			.project-type {
-				letter-spacing: 2px;
+				margin-top: 8px;
 			}
+
 		}
 
 	</style>
+
 </head>
+
 
 <body>
 
-	<main class="site-shell">
 
-		<header class="header">
-			<div>NODESTRADAMUS INDUSTRIES</div>
-			<div class="signal">SIGNAL : ONLINE</div>
-		</header>
+	<!-- ============================================================
+	     FULLSCREEN TERMINAL RENDER
+	     ============================================================ -->
 
-		<section class="terminal-stage">
+	<img
+		id="backgroundImage"
+		class="background-image"
+		src="tv-test.png"
+		alt=""
+	>
 
-			<button
-				class="nav-button nav-left"
-				id="previousButton"
-				aria-label="Previous project"
+
+	<!-- ============================================================
+	     CRT CONTENT AREA
+	     ============================================================ -->
+
+	<div
+		id="screenWindow"
+		class="screen-window"
+	>
+
+		<div
+			id="static"
+			class="static"
+		></div>
+
+
+		<div class="screen-content">
+
+			<div
+				id="project"
+				class="project"
 			>
-				‹
-			</button>
 
-			<div class="terminal-visual">
-
-				<img
-					class="terminal-image"
-					src="tv-test.png"
-					alt="Nodestradamus terminal"
+				<div
+					id="projectNumber"
+					class="project-number"
 				>
+					ARCHIVE 001
+				</div>
 
-				<div class="screen-window">
 
-					<div
-						class="static"
-						id="static"
-					></div>
+				<h1
+					id="projectTitle"
+					class="project-title"
+				>
+					BROADCAST TERMINAL
+				</h1>
 
-					<div class="screen-content">
-						<div
-							class="project"
-							id="project"
-						>
-							<div
-								class="project-number"
-								id="projectNumber"
-							>
-								ARCHIVE 001
-							</div>
 
-							<h1
-								class="project-title"
-								id="projectTitle"
-							>
-								BROADCAST TERMINAL
-							</h1>
-
-							<div
-								class="project-type"
-								id="projectType"
-							>
-								VISUAL SYSTEM TEST
-							</div>
-						</div>
-					</div>
-
+				<div
+					id="projectType"
+					class="project-type"
+				>
+					VISUAL SYSTEM TEST
 				</div>
 
 			</div>
 
-			<button
-				class="nav-button nav-right"
-				id="nextButton"
-				aria-label="Next project"
-			>
-				›
-			</button>
+		</div>
 
-		</section>
+	</div>
 
-		<footer class="footer">
-			<div>NDS-BT / REV 0.2</div>
-			<div id="counter">01 / 03</div>
-		</footer>
 
-	</main>
+	<!-- ============================================================
+	     SITE TEXT
+	     ============================================================ -->
+
+	<header class="header">
+
+		<div>
+			NODESTRADAMUS INDUSTRIES
+		</div>
+
+		<div class="signal">
+			SIGNAL : ONLINE
+		</div>
+
+	</header>
+
+
+	<!-- ============================================================
+	     NAV
+	     ============================================================ -->
+
+	<button
+		class="nav-button nav-left"
+		id="previousButton"
+		aria-label="Previous project"
+	>
+		‹
+	</button>
+
+
+	<button
+		class="nav-button nav-right"
+		id="nextButton"
+		aria-label="Next project"
+	>
+		›
+	</button>
+
+
+	<footer class="footer">
+
+		<div>
+			NDS-BT / REV 0.3
+		</div>
+
+		<div id="counter">
+			01 / 03
+		</div>
+
+	</footer>
+
+
 
 	<script>
+
+		/* ============================================================
+		   PROJECTS
+		   ============================================================ */
 
 		const projects = [
 
@@ -447,28 +590,203 @@
 
 		];
 
+
 		let currentProject = 0;
 		let changing = false;
 
-		const projectNumber = document.getElementById("projectNumber");
-		const projectTitle = document.getElementById("projectTitle");
-		const projectType = document.getElementById("projectType");
-		const counter = document.getElementById("counter");
-		const staticLayer = document.getElementById("static");
+
+		const backgroundImage =
+			document.getElementById("backgroundImage");
+
+
+		const screenWindow =
+			document.getElementById("screenWindow");
+
+
+		const projectNumber =
+			document.getElementById("projectNumber");
+
+
+		const projectTitle =
+			document.getElementById("projectTitle");
+
+
+		const projectType =
+			document.getElementById("projectType");
+
+
+		const counter =
+			document.getElementById("counter");
+
+
+		const staticLayer =
+			document.getElementById("static");
+
+
+
+		/* ============================================================
+		   SCREEN POSITION
+		   
+		   These values describe the CRT screen location
+		   inside the ORIGINAL 1920x1080 render.
+		   ============================================================ */
+
+		const SCREEN = {
+
+			x: 570,
+			y: 177,
+
+			width: 780,
+			height: 640
+
+		};
+
+
+
+		/* ============================================================
+		   KEEP HTML SCREEN REGISTERED TO BACKGROUND IMAGE
+		   ============================================================ */
+
+		function positionScreen() {
+
+			const naturalWidth =
+				backgroundImage.naturalWidth || 1920;
+
+
+			const naturalHeight =
+				backgroundImage.naturalHeight || 1080;
+
+
+			const viewportWidth =
+				window.innerWidth;
+
+
+			const viewportHeight =
+				window.innerHeight;
+
+
+
+			/*
+				object-fit: cover
+
+				Find scale necessary to completely fill browser.
+			*/
+
+			const scale = Math.max(
+
+				viewportWidth / naturalWidth,
+
+				viewportHeight / naturalHeight
+
+			);
+
+
+
+			const renderedWidth =
+				naturalWidth * scale;
+
+
+			const renderedHeight =
+				naturalHeight * scale;
+
+
+
+			/*
+				Image is centered.
+
+				These offsets account for cropping caused
+				by different browser aspect ratios.
+			*/
+
+			const offsetX =
+				(viewportWidth - renderedWidth) / 2;
+
+
+			const offsetY =
+				(viewportHeight - renderedHeight) / 2;
+
+
+
+			screenWindow.style.left =
+				(offsetX + SCREEN.x * scale) + "px";
+
+
+			screenWindow.style.top =
+				(offsetY + SCREEN.y * scale) + "px";
+
+
+			screenWindow.style.width =
+				(SCREEN.width * scale) + "px";
+
+
+			screenWindow.style.height =
+				(SCREEN.height * scale) + "px";
+
+		}
+
+
+
+		backgroundImage.addEventListener(
+			"load",
+			positionScreen
+		);
+
+
+		window.addEventListener(
+			"resize",
+			positionScreen
+		);
+
+
+		positionScreen();
+
+
+
+		/* ============================================================
+		   UPDATE PROJECT
+		   ============================================================ */
 
 		function updateProject() {
 
-			const project = projects[currentProject];
+			const project =
+				projects[currentProject];
 
-			projectNumber.textContent = project.number;
-			projectTitle.textContent = project.title;
-			projectType.textContent = project.type;
+
+			projectNumber.textContent =
+				project.number;
+
+
+			projectTitle.textContent =
+				project.title;
+
+
+			projectType.textContent =
+				project.type;
+
 
 			counter.textContent =
-				String(currentProject + 1).padStart(2, "0") +
-				" / " +
-				String(projects.length).padStart(2, "0");
+
+				String(
+					currentProject + 1
+				).padStart(2, "0")
+
+				+
+
+				" / "
+
+				+
+
+				String(
+					projects.length
+				).padStart(2, "0");
+
 		}
+
+
+
+		/* ============================================================
+		   CHANGE PROJECT
+		   ============================================================ */
 
 		function changeProject(direction) {
 
@@ -476,54 +794,116 @@
 				return;
 			}
 
+
 			changing = true;
-			staticLayer.classList.add("active");
+
+
+			staticLayer.classList.add(
+				"active"
+			);
+
+
 
 			setTimeout(() => {
 
 				currentProject += direction;
 
-				if (currentProject >= projects.length) {
+
+				if (
+					currentProject >= projects.length
+				) {
+
 					currentProject = 0;
+
 				}
 
-				if (currentProject < 0) {
-					currentProject = projects.length - 1;
+
+				if (
+					currentProject < 0
+				) {
+
+					currentProject =
+						projects.length - 1;
+
 				}
+
 
 				updateProject();
 
 			}, 250);
 
+
+
 			setTimeout(() => {
-				staticLayer.classList.remove("active");
+
+				staticLayer.classList.remove(
+					"active"
+				);
+
+
 				changing = false;
+
 			}, 550);
+
 		}
+
+
+
+		/* ============================================================
+		   BUTTONS
+		   ============================================================ */
 
 		document
 			.getElementById("nextButton")
-			.addEventListener("click", () => changeProject(1));
+			.addEventListener(
+				"click",
+				() => changeProject(1)
+			);
+
 
 		document
 			.getElementById("previousButton")
-			.addEventListener("click", () => changeProject(-1));
+			.addEventListener(
+				"click",
+				() => changeProject(-1)
+			);
 
-		document.addEventListener("keydown", (event) => {
 
-			if (event.key === "ArrowRight") {
-				changeProject(1);
+
+		/* ============================================================
+		   KEYBOARD
+		   ============================================================ */
+
+		document.addEventListener(
+			"keydown",
+			(event) => {
+
+				if (
+					event.key === "ArrowRight"
+				) {
+
+					changeProject(1);
+
+				}
+
+
+				if (
+					event.key === "ArrowLeft"
+				) {
+
+					changeProject(-1);
+
+				}
+
 			}
+		);
 
-			if (event.key === "ArrowLeft") {
-				changeProject(-1);
-			}
 
-		});
 
 		updateProject();
 
 	</script>
+
 
 </body>
 
