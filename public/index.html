@@ -445,14 +445,14 @@
 	<img
 		id="shellImage"
 		class="full-frame shell-image"
-		src="tv-shell4.png"
+		src="tv-shell2.png"
 		alt=""
 	>
 
 
 
 	<!-- ============================================================
-	     FULL FRAME LEFT BUTTON STATE
+	     LEFT BUTTON STATE
 	     ============================================================ -->
 
 	<img
@@ -465,7 +465,7 @@
 
 
 	<!-- ============================================================
-	     FULL FRAME RIGHT BUTTON STATE
+	     RIGHT BUTTON STATE
 	     ============================================================ -->
 
 	<img
@@ -478,7 +478,7 @@
 
 
 	<!-- ============================================================
-	     INVISIBLE BUTTON CLICK AREAS
+	     INVISIBLE BUTTON HITBOXES
 	     ============================================================ -->
 
 	<button
@@ -521,7 +521,7 @@
 	<footer class="footer">
 
 		<div>
-			NDS-BT / REV 0.9
+			NDS-BT / REV 1.0
 		</div>
 
 		<div id="counter">
@@ -564,10 +564,7 @@
 
 
 		/* ============================================================
-		   BUTTON STATE IMAGES
-
-		   These now live inside:
-		   public/buttons/
+		   BUTTON IMAGES
 		   ============================================================ */
 
 		const BUTTON_IMAGES = {
@@ -598,10 +595,7 @@
 
 
 		/* ============================================================
-		   BUTTON SOUND EFFECTS
-
-		   Stored inside:
-		   public/audio/
+		   BUTTON SOUNDS
 		   ============================================================ */
 
 		const BUTTON_SOUND_FILES = [
@@ -638,7 +632,7 @@
 
 
 		/* ============================================================
-		   PLAY NEXT BUTTON SOUND
+		   PLAY NEXT SOUND
 		   ============================================================ */
 
 		function playNextButtonSound() {
@@ -683,6 +677,10 @@
 		let currentProject = 0;
 
 		let changing = false;
+
+		let leftKeyboardPressed = false;
+
+		let rightKeyboardPressed = false;
 
 
 
@@ -774,9 +772,7 @@
 
 
 		/* ============================================================
-		   HARDWARE BUTTON CLICK LOCATIONS
-
-		   These ONLY define the invisible clickable areas.
+		   HARDWARE BUTTON HITBOXES
 		   ============================================================ */
 
 		const LEFT_BUTTON = {
@@ -803,7 +799,7 @@
 
 
 		/* ============================================================
-		   FULLSCREEN COVER MATH
+		   COVER FIT
 		   ============================================================ */
 
 		function getCoverFitMetrics() {
@@ -876,7 +872,7 @@
 
 
 		/* ============================================================
-		   POSITION FROM IMAGE COORDINATES
+		   APPLY IMAGE-SPACE RECT
 		   ============================================================ */
 
 		function applyRect(
@@ -1094,7 +1090,44 @@
 
 
 		/* ============================================================
-		   LEFT BUTTON
+		   PRESS / RELEASE HELPERS
+		   ============================================================ */
+
+		function pressLeftButton() {
+
+			leftButtonImage.src =
+				BUTTON_IMAGES.left.down;
+
+		}
+
+
+		function releaseLeftButton() {
+
+			leftButtonImage.src =
+				BUTTON_IMAGES.left.up;
+
+		}
+
+
+		function pressRightButton() {
+
+			rightButtonImage.src =
+				BUTTON_IMAGES.right.down;
+
+		}
+
+
+		function releaseRightButton() {
+
+			rightButtonImage.src =
+				BUTTON_IMAGES.right.up;
+
+		}
+
+
+
+		/* ============================================================
+		   MOUSE / POINTER LEFT BUTTON
 		   ============================================================ */
 
 		leftButtonHitbox.addEventListener(
@@ -1105,9 +1138,7 @@
 				event.preventDefault();
 
 
-				leftButtonImage.src =
-					BUTTON_IMAGES.left.down;
-
+				pressLeftButton();
 
 				playNextButtonSound();
 
@@ -1130,17 +1161,6 @@
 		);
 
 
-
-		function releaseLeftButton() {
-
-
-			leftButtonImage.src =
-				BUTTON_IMAGES.left.up;
-
-		}
-
-
-
 		leftButtonHitbox.addEventListener(
 			"pointerup",
 			releaseLeftButton
@@ -1161,7 +1181,7 @@
 
 
 		/* ============================================================
-		   RIGHT BUTTON
+		   MOUSE / POINTER RIGHT BUTTON
 		   ============================================================ */
 
 		rightButtonHitbox.addEventListener(
@@ -1172,9 +1192,7 @@
 				event.preventDefault();
 
 
-				rightButtonImage.src =
-					BUTTON_IMAGES.right.down;
-
+				pressRightButton();
 
 				playNextButtonSound();
 
@@ -1197,17 +1215,6 @@
 		);
 
 
-
-		function releaseRightButton() {
-
-
-			rightButtonImage.src =
-				BUTTON_IMAGES.right.up;
-
-		}
-
-
-
 		rightButtonHitbox.addEventListener(
 			"pointerup",
 			releaseRightButton
@@ -1228,9 +1235,9 @@
 
 
 		/* ============================================================
-		   KEYBOARD
+		   KEYBOARD PRESS
 
-		   Still silent. Only hardware clicks play sounds.
+		   Arrow keys now behave exactly like physical buttons.
 		   ============================================================ */
 
 		document.addEventListener(
@@ -1238,14 +1245,89 @@
 			(event) => {
 
 
+				/* Ignore browser keyboard auto-repeat */
+
+				if (event.repeat) {
+					return;
+				}
+
+
+
+				/* LEFT */
+
+				if (
+					event.key ===
+					"ArrowLeft"
+				) {
+
+
+					event.preventDefault();
+
+
+					if (
+						leftKeyboardPressed
+					) {
+						return;
+					}
+
+
+					leftKeyboardPressed = true;
+
+
+					pressLeftButton();
+
+					playNextButtonSound();
+
+					changeProject(-1);
+
+				}
+
+
+
+				/* RIGHT */
+
 				if (
 					event.key ===
 					"ArrowRight"
 				) {
 
+
+					event.preventDefault();
+
+
+					if (
+						rightKeyboardPressed
+					) {
+						return;
+					}
+
+
+					rightKeyboardPressed = true;
+
+
+					pressRightButton();
+
+					playNextButtonSound();
+
 					changeProject(1);
 
 				}
+
+
+			}
+		);
+
+
+
+		/* ============================================================
+		   KEYBOARD RELEASE
+
+		   Button stays visually pressed until arrow key is released.
+		   ============================================================ */
+
+		document.addEventListener(
+			"keyup",
+			(event) => {
 
 
 				if (
@@ -1253,9 +1335,66 @@
 					"ArrowLeft"
 				) {
 
-					changeProject(-1);
+
+					event.preventDefault();
+
+
+					leftKeyboardPressed =
+						false;
+
+
+					releaseLeftButton();
 
 				}
+
+
+
+				if (
+					event.key ===
+					"ArrowRight"
+				) {
+
+
+					event.preventDefault();
+
+
+					rightKeyboardPressed =
+						false;
+
+
+					releaseRightButton();
+
+				}
+
+
+			}
+		);
+
+
+
+		/* ============================================================
+		   SAFETY RESET
+
+		   Prevent a button from remaining visually pressed if the
+		   browser loses focus while an arrow key is held.
+		   ============================================================ */
+
+		window.addEventListener(
+			"blur",
+			() => {
+
+
+				leftKeyboardPressed =
+					false;
+
+
+				rightKeyboardPressed =
+					false;
+
+
+				releaseLeftButton();
+
+				releaseRightButton();
 
 			}
 		);
