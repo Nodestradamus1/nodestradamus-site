@@ -46,31 +46,20 @@
 		/* ============================================================
 		   FULL FRAME IMAGE LAYERS
 
-		   IMPORTANT:
-
-		   The terminal always fills the browser VERTICALLY.
-
-		   It is NEVER zoomed to fill horizontal space.
-
-		   Ultrawide monitors therefore receive black bars
-		   on the left and right.
+		   JavaScript handles the actual sizing so normal screens can
+		   use COVER while ultrawides use vertical fit.
 		   ============================================================ */
 
 		.full-frame {
 			position: absolute;
 
-			top: 0;
-			left: 50%;
-
-			height: 100%;
-			width: auto;
-
-			transform: translateX(-50%);
-
 			display: block;
 
 			user-select: none;
 			pointer-events: none;
+
+			max-width: none;
+			max-height: none;
 		}
 
 
@@ -264,7 +253,7 @@
 
 
 		/* ============================================================
-		   INVISIBLE HARDWARE CLICK AREAS
+		   INVISIBLE BUTTON HITBOXES
 		   ============================================================ */
 
 		.hardware-hitbox {
@@ -530,7 +519,7 @@
 	<footer class="footer">
 
 		<div>
-			NDS-BT / REV 1.1
+			NDS-BT / REV 1.2
 		</div>
 
 		<div id="counter">
@@ -765,7 +754,7 @@
 
 
 		/* ============================================================
-		   ORIGINAL RENDER SIZE
+		   DESIGN SIZE
 		   ============================================================ */
 
 		const DESIGN_WIDTH = 1920;
@@ -775,7 +764,19 @@
 
 
 		/* ============================================================
-		   CRT SCREEN POSITION
+		   ULTRAWIDE THRESHOLD
+
+		   Below 2.20 = old COVER behavior.
+
+		   Above 2.20 = fit vertically and allow black side bars.
+		   ============================================================ */
+
+		const ULTRAWIDE_THRESHOLD = 2.20;
+
+
+
+		/* ============================================================
+		   CRT SCREEN
 		   ============================================================ */
 
 		const SCREEN = {
@@ -791,7 +792,7 @@
 
 
 		/* ============================================================
-		   HARDWARE BUTTON HITBOXES
+		   BUTTON HITBOXES
 		   ============================================================ */
 
 		const LEFT_BUTTON = {
@@ -818,19 +819,16 @@
 
 
 		/* ============================================================
-		   VERTICAL FIT MATH
+		   FIT CALCULATION
 
-		   THIS IS THE IMPORTANT CHANGE.
+		   NORMAL / 16:9:
+		   Behaves like the original object-fit: cover.
 
-		   Scale is based ONLY on browser height.
-
-		   The 1920x1080 terminal therefore always touches
-		   the top and bottom of the browser.
-
-		   Ultrawide screens receive black bars on the sides.
+		   ULTRAWIDE:
+		   Fits based on vertical height so nothing is cropped.
 		   ============================================================ */
 
-		function getVerticalFitMetrics() {
+		function getFitMetrics() {
 
 
 			const naturalWidth =
@@ -851,12 +849,60 @@
 				window.innerHeight;
 
 
+			const viewportAspect =
+				viewportWidth /
+				viewportHeight;
 
-			/* Scale exclusively from height */
 
-			const scale =
-				viewportHeight /
-				naturalHeight;
+
+			let scale;
+
+
+
+			/* ========================================================
+			   ULTRAWIDE
+
+			   Height-fit.
+			   ======================================================== */
+
+			if (
+				viewportAspect >
+				ULTRAWIDE_THRESHOLD
+			) {
+
+
+				scale =
+					viewportHeight /
+					naturalHeight;
+
+
+			}
+
+
+			/* ========================================================
+			   NORMAL SCREEN
+
+			   Old cover behavior.
+
+			   This gives the slight crop / zoom you liked.
+			   ======================================================== */
+
+			else {
+
+
+				scale =
+					Math.max(
+
+						viewportWidth /
+							naturalWidth,
+
+						viewportHeight /
+							naturalHeight
+
+					);
+
+
+			}
 
 
 
@@ -871,13 +917,6 @@
 
 
 
-			/*
-				Center the terminal horizontally.
-
-				On ultrawide monitors this becomes a positive
-				offset, producing black side bars.
-			*/
-
 			const offsetX =
 				(
 					viewportWidth -
@@ -885,11 +924,11 @@
 				) / 2;
 
 
-			/*
-				Always touch top of viewport.
-			*/
-
-			const offsetY = 0;
+			const offsetY =
+				(
+					viewportHeight -
+					renderedHeight
+				) / 2;
 
 
 
@@ -908,7 +947,42 @@
 
 
 		/* ============================================================
-		   APPLY IMAGE-SPACE RECT
+		   POSITION FULL-FRAME PNG LAYERS
+
+		   This guarantees shell and both button images always use the
+		   exact same scale and crop.
+		   ============================================================ */
+
+		function positionFullFrameImage(
+			element
+		) {
+
+
+			const fit =
+				getFitMetrics();
+
+
+			element.style.left =
+				fit.offsetX + "px";
+
+
+			element.style.top =
+				fit.offsetY + "px";
+
+
+			element.style.width =
+				fit.renderedWidth + "px";
+
+
+			element.style.height =
+				fit.renderedHeight + "px";
+
+		}
+
+
+
+		/* ============================================================
+		   POSITION IMAGE-SPACE RECTANGLE
 		   ============================================================ */
 
 		function applyRect(
@@ -918,7 +992,7 @@
 
 
 			const fit =
-				getVerticalFitMetrics();
+				getFitMetrics();
 
 
 			element.style.left =
@@ -935,6 +1009,7 @@
 			element.style.top =
 
 				(
+					fit.offsetY +
 					rect.y *
 					fit.scale
 				)
@@ -966,10 +1041,26 @@
 
 
 		/* ============================================================
-		   POSITION INTERFACE
+		   POSITION EVERYTHING
 		   ============================================================ */
 
 		function positionInterface() {
+
+
+			positionFullFrameImage(
+				shellImage
+			);
+
+
+			positionFullFrameImage(
+				leftButtonImage
+			);
+
+
+			positionFullFrameImage(
+				rightButtonImage
+			);
+
 
 
 			applyRect(
@@ -1125,7 +1216,7 @@
 
 
 		/* ============================================================
-		   BUTTON VISUAL HELPERS
+		   BUTTON VISUALS
 		   ============================================================ */
 
 		function pressLeftButton() {
@@ -1162,7 +1253,7 @@
 
 
 		/* ============================================================
-		   MOUSE LEFT BUTTON
+		   POINTER LEFT
 		   ============================================================ */
 
 		leftButtonHitbox.addEventListener(
@@ -1217,7 +1308,7 @@
 
 
 		/* ============================================================
-		   MOUSE RIGHT BUTTON
+		   POINTER RIGHT
 		   ============================================================ */
 
 		rightButtonHitbox.addEventListener(
@@ -1406,7 +1497,7 @@
 
 
 		/* ============================================================
-		   RESET BUTTONS IF WINDOW LOSES FOCUS
+		   SAFETY RESET
 		   ============================================================ */
 
 		window.addEventListener(
