@@ -629,8 +629,8 @@
 
 	<!-- ============================================================
 	     POWER BUTTON
-
-	     TV starts ON, therefore the button starts DOWN / IN.
+	     DOWN = ON
+	     UP   = OFF
 	     ============================================================ -->
 
 	<img
@@ -696,7 +696,7 @@
 	<footer class="footer">
 
 		<div>
-			NDS-BT / REV 1.5
+			NDS-BT / REV 1.6
 		</div>
 
 		<div id="counter">
@@ -715,7 +715,6 @@
 		   ============================================================ */
 
 		const DESIGN_WIDTH = 1920;
-
 		const DESIGN_HEIGHT = 1080;
 
 
@@ -778,13 +777,13 @@
 
 			power: {
 
-				/* OUT = TV OFF */
+				/* OUT = OFF */
 
 				up:
 					"buttons/power-button-up.png",
 
 
-				/* IN = TV ON */
+				/* IN = ON */
 
 				down:
 					"buttons/power-button-down.png"
@@ -796,7 +795,7 @@
 
 
 		/* ============================================================
-		   BUTTON SOUNDS
+		   NORMAL NAV BUTTON SOUNDS
 		   ============================================================ */
 
 		const BUTTON_SOUND_FILES = [
@@ -856,7 +855,7 @@
 
 			if (
 				nextButtonSound >=
-				buttonSounds.length
+					buttonSounds.length
 			) {
 
 				nextButtonSound = 0;
@@ -864,6 +863,226 @@
 			}
 
 		}
+
+
+
+		/* ============================================================
+		   POWER BUTTON SOUNDS
+		   ============================================================ */
+
+		const powerOnSound =
+			new Audio(
+				"audio/pwr-click-on.mp3"
+			);
+
+
+		const powerOffSound =
+			new Audio(
+				"audio/pwr-click-off.mp3"
+			);
+
+
+		powerOnSound.preload =
+			"auto";
+
+
+		powerOffSound.preload =
+			"auto";
+
+
+
+		function playPowerOnSound() {
+
+
+			powerOnSound.currentTime = 0;
+
+
+			powerOnSound
+				.play()
+				.catch(
+					() => {}
+				);
+
+		}
+
+
+
+		function playPowerOffSound() {
+
+
+			powerOffSound.currentTime = 0;
+
+
+			powerOffSound
+				.play()
+				.catch(
+					() => {}
+				);
+
+		}
+
+
+
+		/* ============================================================
+		   AMBIENT LOOP
+		   ============================================================ */
+
+		const ambientAudio =
+			new Audio(
+				"audio/ambient-loop-audio.wav"
+			);
+
+
+		ambientAudio.loop =
+			true;
+
+
+		ambientAudio.preload =
+			"auto";
+
+
+		ambientAudio.volume =
+			1.0;
+
+
+
+		/*
+			The user considers the ambient track ON by default.
+
+			If the browser blocks autoplay, it will start as soon as
+			the user performs their first interaction.
+		*/
+
+		let ambientEnabled =
+			true;
+
+
+
+		async function startAmbientAudio() {
+
+
+			if (!ambientEnabled) {
+				return;
+			}
+
+
+			try {
+
+
+				await ambientAudio.play();
+
+
+			}
+
+			catch (error) {
+
+
+				/*
+					Browser probably blocked autoplay.
+
+					We'll try again after user interaction.
+				*/
+
+
+			}
+
+		}
+
+
+
+		function stopAmbientAudio() {
+
+
+			ambientAudio.pause();
+
+		}
+
+
+
+		function toggleAmbientAudio() {
+
+
+			ambientEnabled =
+				!ambientEnabled;
+
+
+			if (ambientEnabled) {
+
+
+				startAmbientAudio();
+
+
+			}
+
+			else {
+
+
+				stopAmbientAudio();
+
+
+			}
+
+		}
+
+
+
+		/* ============================================================
+		   AUTOPLAY UNLOCK
+
+		   Browsers generally don't allow a website to begin playing
+		   audible media until the visitor interacts with the page.
+
+		   Once ANY pointer or keyboard interaction occurs, try to
+		   start the ambient loop if M has not disabled it.
+		   ============================================================ */
+
+		let audioInteractionUnlocked =
+			false;
+
+
+
+		function unlockAmbientAudio() {
+
+
+			if (audioInteractionUnlocked) {
+				return;
+			}
+
+
+			audioInteractionUnlocked =
+				true;
+
+
+			startAmbientAudio();
+
+		}
+
+
+
+		document.addEventListener(
+			"pointerdown",
+			unlockAmbientAudio,
+			{
+				once: true,
+				capture: true
+			}
+		);
+
+
+		document.addEventListener(
+			"keydown",
+			unlockAmbientAudio,
+			{
+				once: true,
+				capture: true
+			}
+		);
+
+
+
+		/* Try immediately as well. */
+
+		startAmbientAudio();
 
 
 
@@ -884,8 +1103,6 @@
 		let currentProject = 0;
 
 		let changing = false;
-
-		/* TV STARTS ON */
 
 		let isPoweredOn = true;
 
@@ -995,7 +1212,7 @@
 
 
 		/* ============================================================
-		   SCREEN LOCATION
+		   SCREEN POSITION
 		   ============================================================ */
 
 		const SCREEN = {
@@ -1441,6 +1658,7 @@
 
 		function pressLeftButton() {
 
+
 			leftButtonImage.src =
 				BUTTON_IMAGES.left.down;
 
@@ -1448,6 +1666,7 @@
 
 
 		function releaseLeftButton() {
+
 
 			leftButtonImage.src =
 				BUTTON_IMAGES.left.up;
@@ -1457,6 +1676,7 @@
 
 		function pressRightButton() {
 
+
 			rightButtonImage.src =
 				BUTTON_IMAGES.right.down;
 
@@ -1464,6 +1684,7 @@
 
 
 		function releaseRightButton() {
+
 
 			rightButtonImage.src =
 				BUTTON_IMAGES.right.up;
@@ -1474,11 +1695,6 @@
 
 		/* ============================================================
 		   POWER BUTTON VISUAL
-
-		   LATCHING SWITCH:
-
-		   DOWN = IN = ON
-		   UP   = OUT = OFF
 		   ============================================================ */
 
 		function updatePowerButtonImage() {
@@ -1523,21 +1739,18 @@
 			}
 
 
-			powerAnimating = true;
+			powerAnimating =
+				true;
 
 
-
-			/*
-				Change the physical button immediately.
-
-				The switch pops OUT.
-			*/
-
-			isPoweredOn = false;
+			isPoweredOn =
+				false;
 
 
 			updatePowerButtonImage();
 
+
+			playPowerOffSound();
 
 
 			staticLayer.classList.remove(
@@ -1573,7 +1786,8 @@
 					);
 
 
-					powerAnimating = false;
+					powerAnimating =
+						false;
 
 
 				},
@@ -1601,21 +1815,18 @@
 			}
 
 
-			powerAnimating = true;
+			powerAnimating =
+				true;
 
 
-
-			/*
-				Change physical button immediately.
-
-				The switch pushes IN.
-			*/
-
-			isPoweredOn = true;
+			isPoweredOn =
+				true;
 
 
 			updatePowerButtonImage();
 
+
+			playPowerOnSound();
 
 
 			screenWindow.classList.remove(
@@ -1646,7 +1857,8 @@
 					);
 
 
-					powerAnimating = false;
+					powerAnimating =
+						false;
 
 
 				},
@@ -1667,9 +1879,6 @@
 			if (powerAnimating) {
 				return;
 			}
-
-
-			playNextButtonSound();
 
 
 			if (isPoweredOn) {
@@ -1803,12 +2012,7 @@
 
 
 		/* ============================================================
-		   POWER BUTTON
-
-		   Unlike the navigation buttons, there is NO pointer-up
-		   state change.
-
-		   It stays latched until the next click.
+		   POWER POINTER BUTTON
 		   ============================================================ */
 
 		powerButtonHitbox.addEventListener(
@@ -1847,11 +2051,67 @@
 			(event) => {
 
 
+				/*
+					M should toggle only once per physical key press.
+
+					P should toggle only once.
+
+					Arrow keys also ignore key-repeat as before.
+				*/
+
 				if (event.repeat) {
 					return;
 				}
 
 
+
+				/* ====================================================
+				   M = AMBIENT AUDIO ON / OFF
+				   ==================================================== */
+
+				if (
+					event.key.toLowerCase() ===
+						"m"
+				) {
+
+
+					event.preventDefault();
+
+
+					toggleAmbientAudio();
+
+
+					return;
+
+				}
+
+
+
+				/* ====================================================
+				   P = PHYSICAL POWER BUTTON
+				   ==================================================== */
+
+				if (
+					event.key.toLowerCase() ===
+						"p"
+				) {
+
+
+					event.preventDefault();
+
+
+					togglePower();
+
+
+					return;
+
+				}
+
+
+
+				/* ====================================================
+				   LEFT ARROW
+				   ==================================================== */
 
 				if (
 					event.key ===
@@ -1886,6 +2146,10 @@
 				}
 
 
+
+				/* ====================================================
+				   RIGHT ARROW
+				   ==================================================== */
 
 				if (
 					event.key ===
