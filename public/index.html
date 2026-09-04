@@ -23,6 +23,7 @@
 			box-sizing: border-box;
 		}
 
+
 		html,
 		body {
 			margin: 0;
@@ -38,9 +39,36 @@
 			font-family: "Courier New", monospace;
 		}
 
+
 		body {
 			position: relative;
 		}
+
+
+
+		/* ============================================================
+		   GLOBAL BLOOM WRAPPER
+
+		   Everything visible is rendered through this filter.
+
+		   Invisible interaction hitboxes remain outside this layer.
+		   ============================================================ */
+
+		#bloomRoot {
+			position: absolute;
+
+			inset: 0;
+
+			width: 100%;
+			height: 100%;
+
+			filter: url("#globalBloom");
+
+			isolation: isolate;
+
+			pointer-events: none;
+		}
+
 
 
 		/* ============================================================
@@ -68,6 +96,7 @@
 		.button-state-image {
 			z-index: 25;
 		}
+
 
 
 		/* ============================================================
@@ -100,6 +129,7 @@
 				opacity,
 				filter;
 		}
+
 
 
 		/* ============================================================
@@ -176,6 +206,7 @@
 		}
 
 
+
 		/* ============================================================
 		   CRT POWER ON
 		   ============================================================ */
@@ -250,6 +281,7 @@
 		}
 
 
+
 		/* ============================================================
 		   CRT SCANLINES
 		   ============================================================ */
@@ -275,6 +307,7 @@
 
 			opacity: 0.65;
 		}
+
 
 
 		/* ============================================================
@@ -346,6 +379,7 @@
 		}
 
 
+
 		/* ============================================================
 		   STATIC
 		   ============================================================ */
@@ -404,6 +438,7 @@
 		}
 
 
+
 		/* ============================================================
 		   INVISIBLE HARDWARE HITBOXES
 		   ============================================================ */
@@ -411,7 +446,7 @@
 		.hardware-hitbox {
 			position: absolute;
 
-			z-index: 40;
+			z-index: 100;
 
 			border: none;
 
@@ -429,6 +464,7 @@
 		.hardware-hitbox:focus-visible {
 			outline: 1px solid rgba(255, 255, 255, 0.3);
 		}
+
 
 
 		/* ============================================================
@@ -466,6 +502,7 @@
 		}
 
 
+
 		/* ============================================================
 		   FOOTER
 		   ============================================================ */
@@ -498,6 +535,7 @@
 		}
 
 
+
 		/* ============================================================
 		   MOBILE
 		   ============================================================ */
@@ -512,6 +550,7 @@
 				font-size: 9px;
 			}
 
+
 			.footer {
 				bottom: 16px;
 				left: 16px;
@@ -520,9 +559,11 @@
 				font-size: 9px;
 			}
 
+
 			.project-number {
 				margin-bottom: 8px;
 			}
+
 
 			.project-type {
 				margin-top: 8px;
@@ -539,171 +580,494 @@
 
 
 	<!-- ============================================================
-	     CRT SCREEN
+	     GLOBAL BLOOM FILTER
 	     ============================================================ -->
 
-	<div
-		id="screenWindow"
-		class="screen-window"
+	<svg
+		width="0"
+		height="0"
+		style="
+			position: absolute;
+			pointer-events: none;
+		"
+		aria-hidden="true"
 	>
 
+		<defs>
+
+
+			<filter
+				id="globalBloom"
+
+				x="-20%"
+				y="-20%"
+
+				width="140%"
+				height="140%"
+
+				color-interpolation-filters="sRGB"
+			>
+
+
+				<!-- ==================================================
+				     CONVERT BRIGHTNESS INTO MASK
+				     ================================================== -->
+
+				<feColorMatrix
+					in="SourceGraphic"
+
+					type="matrix"
+
+					values="
+						0 0 0 0 1
+						0 0 0 0 1
+						0 0 0 0 1
+						0.2126 0.7152 0.0722 0 0
+					"
+
+					result="luminanceMask"
+				/>
+
+
+
+				<!-- ==================================================
+				     BRIGHTNESS THRESHOLD
+
+				     Dark pixels disappear.
+
+				     Only the brightest portions of the webpage
+				     contribute to bloom.
+				     ================================================== -->
+
+				<feComponentTransfer
+					in="luminanceMask"
+					result="thresholdMask"
+				>
+
+					<feFuncA
+						type="table"
+
+						tableValues="
+							0
+							0
+							0
+							0
+							0
+							0.05
+							0.35
+							1
+						"
+					/>
+
+				</feComponentTransfer>
+
+
+
+				<!-- ==================================================
+				     RESTORE ORIGINAL COLORS USING BRIGHTNESS MASK
+				     ================================================== -->
+
+				<feComposite
+					in="SourceGraphic"
+
+					in2="thresholdMask"
+
+					operator="in"
+
+					result="brightPixels"
+				/>
+
+
+
+				<!-- ==================================================
+				     TIGHT BLOOM
+				     ================================================== -->
+
+				<feGaussianBlur
+					in="brightPixels"
+
+					stdDeviation="4"
+
+					result="bloomTight"
+				/>
+
+
+
+				<!-- ==================================================
+				     MEDIUM BLOOM
+				     ================================================== -->
+
+				<feGaussianBlur
+					in="brightPixels"
+
+					stdDeviation="10"
+
+					result="bloomMedium"
+				/>
+
+
+
+				<!-- ==================================================
+				     LARGE BLOOM
+				     ================================================== -->
+
+				<feGaussianBlur
+					in="brightPixels"
+
+					stdDeviation="22"
+
+					result="bloomLarge"
+				/>
+
+
+
+				<!-- ==================================================
+				     TIGHT BLOOM INTENSITY
+				     ================================================== -->
+
+				<feComponentTransfer
+					in="bloomTight"
+
+					result="bloomTightBoost"
+				>
+
+					<feFuncR
+						type="linear"
+						slope="1.65"
+					/>
+
+					<feFuncG
+						type="linear"
+						slope="1.65"
+					/>
+
+					<feFuncB
+						type="linear"
+						slope="1.65"
+					/>
+
+					<feFuncA
+						type="linear"
+						slope="0.75"
+					/>
+
+				</feComponentTransfer>
+
+
+
+				<!-- ==================================================
+				     MEDIUM BLOOM INTENSITY
+				     ================================================== -->
+
+				<feComponentTransfer
+					in="bloomMedium"
+
+					result="bloomMediumBoost"
+				>
+
+					<feFuncR
+						type="linear"
+						slope="1.45"
+					/>
+
+					<feFuncG
+						type="linear"
+						slope="1.45"
+					/>
+
+					<feFuncB
+						type="linear"
+						slope="1.45"
+					/>
+
+					<feFuncA
+						type="linear"
+						slope="0.48"
+					/>
+
+				</feComponentTransfer>
+
+
+
+				<!-- ==================================================
+				     LARGE BLOOM INTENSITY
+				     ================================================== -->
+
+				<feComponentTransfer
+					in="bloomLarge"
+
+					result="bloomLargeBoost"
+				>
+
+					<feFuncR
+						type="linear"
+						slope="1.25"
+					/>
+
+					<feFuncG
+						type="linear"
+						slope="1.25"
+					/>
+
+					<feFuncB
+						type="linear"
+						slope="1.25"
+					/>
+
+					<feFuncA
+						type="linear"
+						slope="0.24"
+					/>
+
+				</feComponentTransfer>
+
+
+
+				<!-- ==================================================
+				     COMBINE BLOOM RADII
+				     ================================================== -->
+
+				<feBlend
+					in="bloomTightBoost"
+					in2="bloomMediumBoost"
+
+					mode="screen"
+
+					result="bloomCombined1"
+				/>
+
+
+				<feBlend
+					in="bloomCombined1"
+					in2="bloomLargeBoost"
+
+					mode="screen"
+
+					result="bloomCombined2"
+				/>
+
+
+
+				<!-- ==================================================
+				     BLOOM OVER ORIGINAL PAGE
+				     ================================================== -->
+
+				<feBlend
+					in="SourceGraphic"
+					in2="bloomCombined2"
+
+					mode="screen"
+				/>
+
+
+			</filter>
+
+
+		</defs>
+
+	</svg>
+
+
+
+	<!-- ============================================================
+	     EVERYTHING VISIBLE GOES THROUGH BLOOM
+	     ============================================================ -->
+
+	<div id="bloomRoot">
+
+
+		<!-- ========================================================
+		     CRT SCREEN
+		     ======================================================== -->
+
 		<div
-			id="static"
-			class="static"
-		></div>
+			id="screenWindow"
+			class="screen-window"
+		>
+
+			<div
+				id="static"
+				class="static"
+			></div>
 
 
-		<div class="screen-content">
+			<div class="screen-content">
 
-			<div class="project">
+				<div class="project">
 
-				<div
-					id="projectNumber"
-					class="project-number"
-				>
-					ARCHIVE 001
-				</div>
-
-
-				<h1
-					id="projectTitle"
-					class="project-title"
-				>
-					BROADCAST TERMINAL
-				</h1>
+					<div
+						id="projectNumber"
+						class="project-number"
+					>
+						ARCHIVE 001
+					</div>
 
 
-				<div
-					id="projectType"
-					class="project-type"
-				>
-					VISUAL SYSTEM TEST
+					<h1
+						id="projectTitle"
+						class="project-title"
+					>
+						BROADCAST TERMINAL
+					</h1>
+
+
+					<div
+						id="projectType"
+						class="project-type"
+					>
+						VISUAL SYSTEM TEST
+					</div>
+
 				</div>
 
 			</div>
 
 		</div>
 
+
+
+		<!-- ========================================================
+		     MAIN 4K SHELL
+		     ======================================================== -->
+
+		<img
+			id="shellImage"
+
+			class="full-frame shell-image"
+
+			src="tv-shell7.png"
+
+			alt=""
+		>
+
+
+
+		<!-- ========================================================
+		     LEFT BUTTON
+		     ======================================================== -->
+
+		<img
+			id="leftButtonImage"
+
+			class="full-frame button-state-image"
+
+			src="buttons/btn-left-up.png"
+
+			alt=""
+		>
+
+
+
+		<!-- ========================================================
+		     RIGHT BUTTON
+		     ======================================================== -->
+
+		<img
+			id="rightButtonImage"
+
+			class="full-frame button-state-image"
+
+			src="buttons/btn-right-up.png"
+
+			alt=""
+		>
+
+
+
+		<!-- ========================================================
+		     POWER BUTTON
+
+		     DOWN = ON
+		     UP   = OFF
+		     ======================================================== -->
+
+		<img
+			id="powerButtonImage"
+
+			class="full-frame button-state-image"
+
+			src="buttons/power-button-down.png"
+
+			alt=""
+		>
+
+
+
+		<!-- ========================================================
+		     HEADER
+		     ======================================================== -->
+
+		<header class="header">
+
+			<div>
+				NODESTRADAMUS INDUSTRIES
+			</div>
+
+
+			<div
+				id="signalStatus"
+				class="signal"
+			>
+				SIGNAL : ONLINE
+			</div>
+
+		</header>
+
+
+
+		<!-- ========================================================
+		     FOOTER
+		     ======================================================== -->
+
+		<footer class="footer">
+
+			<div>
+				NDS-BT / REV 1.7
+			</div>
+
+
+			<div id="counter">
+				01 / 03
+			</div>
+
+		</footer>
+
+
 	</div>
 
 
 
 	<!-- ============================================================
-	     MAIN 4K SHELL
-	     ============================================================ -->
+	     INVISIBLE INTERACTION HITBOXES
 
-	<img
-		id="shellImage"
-		class="full-frame shell-image"
-		src="tv-shell7.png"
-		alt=""
-	>
-
-
-
-	<!-- ============================================================
-	     LEFT BUTTON
-	     ============================================================ -->
-
-	<img
-		id="leftButtonImage"
-		class="full-frame button-state-image"
-		src="buttons/btn-left-up.png"
-		alt=""
-	>
-
-
-
-	<!-- ============================================================
-	     RIGHT BUTTON
-	     ============================================================ -->
-
-	<img
-		id="rightButtonImage"
-		class="full-frame button-state-image"
-		src="buttons/btn-right-up.png"
-		alt=""
-	>
-
-
-
-	<!-- ============================================================
-	     POWER BUTTON
-	     DOWN = ON
-	     UP   = OFF
-	     ============================================================ -->
-
-	<img
-		id="powerButtonImage"
-		class="full-frame button-state-image"
-		src="buttons/power-button-down.png"
-		alt=""
-	>
-
-
-
-	<!-- ============================================================
-	     INVISIBLE HITBOXES
+	     These intentionally live OUTSIDE bloomRoot.
 	     ============================================================ -->
 
 	<button
 		id="leftButtonHitbox"
+
 		class="hardware-hitbox"
+
 		aria-label="Previous project"
 	></button>
 
 
 	<button
 		id="rightButtonHitbox"
+
 		class="hardware-hitbox"
+
 		aria-label="Next project"
 	></button>
 
 
 	<button
 		id="powerButtonHitbox"
+
 		class="hardware-hitbox"
+
 		aria-label="Power"
 	></button>
-
-
-
-	<!-- ============================================================
-	     HEADER
-	     ============================================================ -->
-
-	<header class="header">
-
-		<div>
-			NODESTRADAMUS INDUSTRIES
-		</div>
-
-		<div
-			id="signalStatus"
-			class="signal"
-		>
-			SIGNAL : ONLINE
-		</div>
-
-	</header>
-
-
-
-	<!-- ============================================================
-	     FOOTER
-	     ============================================================ -->
-
-	<footer class="footer">
-
-		<div>
-			NDS-BT / REV 1.6
-		</div>
-
-		<div id="counter">
-			01 / 03
-		</div>
-
-	</footer>
 
 
 
@@ -714,8 +1078,12 @@
 		   LOGICAL DESIGN SPACE
 		   ============================================================ */
 
-		const DESIGN_WIDTH = 1920;
-		const DESIGN_HEIGHT = 1080;
+		const DESIGN_WIDTH =
+			1920;
+
+
+		const DESIGN_HEIGHT =
+			1080;
 
 
 
@@ -726,21 +1094,38 @@
 		const projects = [
 
 			{
-				number: "ARCHIVE 001",
-				title: "BROADCAST TERMINAL",
-				type: "VISUAL SYSTEM TEST"
+				number:
+					"ARCHIVE 001",
+
+				title:
+					"BROADCAST TERMINAL",
+
+				type:
+					"VISUAL SYSTEM TEST"
 			},
 
-			{
-				number: "ARCHIVE 002",
-				title: "CONCERT VISUALS",
-				type: "LIVE ENTERTAINMENT"
-			},
 
 			{
-				number: "ARCHIVE 003",
-				title: "EXPERIMENTAL",
-				type: "3D / TOUCHDESIGNER"
+				number:
+					"ARCHIVE 002",
+
+				title:
+					"CONCERT VISUALS",
+
+				type:
+					"LIVE ENTERTAINMENT"
+			},
+
+
+			{
+				number:
+					"ARCHIVE 003",
+
+				title:
+					"EXPERIMENTAL",
+
+				type:
+					"3D / TOUCHDESIGNER"
 			}
 
 		];
@@ -813,21 +1198,26 @@
 
 		const buttonSounds =
 			BUTTON_SOUND_FILES.map(
+
 				(file) => {
 
 					const sound =
 						new Audio(file);
 
+
 					sound.preload =
 						"auto";
+
 
 					return sound;
 
 				}
+
 			);
 
 
-		let nextButtonSound = 0;
+		let nextButtonSound =
+			0;
 
 
 
@@ -840,7 +1230,8 @@
 				];
 
 
-			sound.currentTime = 0;
+			sound.currentTime =
+				0;
 
 
 			sound
@@ -855,10 +1246,11 @@
 
 			if (
 				nextButtonSound >=
-					buttonSounds.length
+				buttonSounds.length
 			) {
 
-				nextButtonSound = 0;
+				nextButtonSound =
+					0;
 
 			}
 
@@ -894,7 +1286,8 @@
 		function playPowerOnSound() {
 
 
-			powerOnSound.currentTime = 0;
+			powerOnSound.currentTime =
+				0;
 
 
 			powerOnSound
@@ -910,7 +1303,8 @@
 		function playPowerOffSound() {
 
 
-			powerOffSound.currentTime = 0;
+			powerOffSound.currentTime =
+				0;
 
 
 			powerOffSound
@@ -945,14 +1339,6 @@
 			1.0;
 
 
-
-		/*
-			The user considers the ambient track ON by default.
-
-			If the browser blocks autoplay, it will start as soon as
-			the user performs their first interaction.
-		*/
-
 		let ambientEnabled =
 			true;
 
@@ -978,9 +1364,10 @@
 
 
 				/*
-					Browser probably blocked autoplay.
+					Browser autoplay protection.
 
-					We'll try again after user interaction.
+					Audio will be retried after the user's
+					first interaction.
 				*/
 
 
@@ -1028,12 +1415,6 @@
 
 		/* ============================================================
 		   AUTOPLAY UNLOCK
-
-		   Browsers generally don't allow a website to begin playing
-		   audible media until the visitor interacts with the page.
-
-		   Once ANY pointer or keyboard interaction occurs, try to
-		   start the ambient loop if M has not disabled it.
 		   ============================================================ */
 
 		let audioInteractionUnlocked =
@@ -1060,39 +1441,49 @@
 
 
 		document.addEventListener(
+
 			"pointerdown",
+
 			unlockAmbientAudio,
+
 			{
 				once: true,
 				capture: true
 			}
+
 		);
+
 
 
 		document.addEventListener(
+
 			"keydown",
+
 			unlockAmbientAudio,
+
 			{
 				once: true,
 				capture: true
 			}
+
 		);
 
 
-
-		/* Try immediately as well. */
 
 		startAmbientAudio();
 
 
 
 		/* ============================================================
-		   SHORT STATIC TIMING
+		   STATIC TIMING
 		   ============================================================ */
 
-		const STATIC_SWITCH_TIME = 125;
+		const STATIC_SWITCH_TIME =
+			125;
 
-		const STATIC_TOTAL_TIME = 275;
+
+		const STATIC_TOTAL_TIME =
+			275;
 
 
 
@@ -1100,17 +1491,28 @@
 		   STATE
 		   ============================================================ */
 
-		let currentProject = 0;
+		let currentProject =
+			0;
 
-		let changing = false;
 
-		let isPoweredOn = true;
+		let changing =
+			false;
 
-		let powerAnimating = false;
 
-		let leftKeyboardPressed = false;
+		let isPoweredOn =
+			true;
 
-		let rightKeyboardPressed = false;
+
+		let powerAnimating =
+			false;
+
+
+		let leftKeyboardPressed =
+			false;
+
+
+		let rightKeyboardPressed =
+			false;
 
 
 
@@ -1207,7 +1609,8 @@
 		   ULTRAWIDE BEHAVIOR
 		   ============================================================ */
 
-		const ULTRAWIDE_THRESHOLD = 2.20;
+		const ULTRAWIDE_THRESHOLD =
+			2.20;
 
 
 
@@ -1292,25 +1695,36 @@
 
 			const viewportAspect =
 				viewportWidth /
-					viewportHeight;
+				viewportHeight;
 
 
 			let scale;
 
 
 
+			/* ========================================================
+			   TRUE ULTRAWIDE
+			   ======================================================== */
+
 			if (
 				viewportAspect >
-					ULTRAWIDE_THRESHOLD
+				ULTRAWIDE_THRESHOLD
 			) {
 
 
 				scale =
 					viewportHeight /
-						DESIGN_HEIGHT;
+					DESIGN_HEIGHT;
 
 
 			}
+
+
+			/* ========================================================
+			   NORMAL / 16:9
+
+			   Old cover behavior.
+			   ======================================================== */
 
 			else {
 
@@ -1333,25 +1747,25 @@
 
 			const renderedWidth =
 				DESIGN_WIDTH *
-					scale;
+				scale;
 
 
 			const renderedHeight =
 				DESIGN_HEIGHT *
-					scale;
+				scale;
 
 
 			const offsetX =
 				(
 					viewportWidth -
-						renderedWidth
+					renderedWidth
 				) / 2;
 
 
 			const offsetY =
 				(
 					viewportHeight -
-						renderedHeight
+					renderedHeight
 				) / 2;
 
 
@@ -1384,19 +1798,23 @@
 
 
 			element.style.left =
-				fit.offsetX + "px";
+				fit.offsetX +
+				"px";
 
 
 			element.style.top =
-				fit.offsetY + "px";
+				fit.offsetY +
+				"px";
 
 
 			element.style.width =
-				fit.renderedWidth + "px";
+				fit.renderedWidth +
+				"px";
 
 
 			element.style.height =
-				fit.renderedHeight + "px";
+				fit.renderedHeight +
+				"px";
 
 		}
 
@@ -1420,8 +1838,8 @@
 
 				(
 					fit.offsetX +
-						rect.x *
-							fit.scale
+					rect.x *
+					fit.scale
 				)
 
 				+ "px";
@@ -1431,8 +1849,8 @@
 
 				(
 					fit.offsetY +
-						rect.y *
-							fit.scale
+					rect.y *
+					fit.scale
 				)
 
 				+ "px";
@@ -1442,7 +1860,7 @@
 
 				(
 					rect.width *
-						fit.scale
+					fit.scale
 				)
 
 				+ "px";
@@ -1452,7 +1870,7 @@
 
 				(
 					rect.height *
-						fit.scale
+					fit.scale
 				)
 
 				+ "px";
@@ -1586,7 +2004,8 @@
 			}
 
 
-			changing = true;
+			changing =
+				true;
 
 
 			staticLayer.classList.add(
@@ -1596,6 +2015,7 @@
 
 
 			setTimeout(
+
 				() => {
 
 
@@ -1605,10 +2025,11 @@
 
 					if (
 						currentProject >=
-							projects.length
+						projects.length
 					) {
 
-						currentProject = 0;
+						currentProject =
+							0;
 
 					}
 
@@ -1627,12 +2048,15 @@
 
 
 				},
+
 				STATIC_SWITCH_TIME
+
 			);
 
 
 
 			setTimeout(
+
 				() => {
 
 
@@ -1641,11 +2065,14 @@
 					);
 
 
-					changing = false;
+					changing =
+						false;
 
 
 				},
+
 				STATIC_TOTAL_TIME
+
 			);
 
 		}
@@ -1653,7 +2080,7 @@
 
 
 		/* ============================================================
-		   LEFT / RIGHT MOMENTARY BUTTON VISUALS
+		   LEFT / RIGHT BUTTON VISUALS
 		   ============================================================ */
 
 		function pressLeftButton() {
@@ -1665,6 +2092,7 @@
 		}
 
 
+
 		function releaseLeftButton() {
 
 
@@ -1674,6 +2102,7 @@
 		}
 
 
+
 		function pressRightButton() {
 
 
@@ -1681,6 +2110,7 @@
 				BUTTON_IMAGES.right.down;
 
 		}
+
 
 
 		function releaseRightButton() {
@@ -1773,6 +2203,7 @@
 
 
 			setTimeout(
+
 				() => {
 
 
@@ -1791,7 +2222,9 @@
 
 
 				},
+
 				240
+
 			);
 
 		}
@@ -1849,6 +2282,7 @@
 
 
 			setTimeout(
+
 				() => {
 
 
@@ -1862,7 +2296,9 @@
 
 
 				},
+
 				300
+
 			);
 
 		}
@@ -1906,7 +2342,9 @@
 		   ============================================================ */
 
 		leftButtonHitbox.addEventListener(
+
 			"pointerdown",
+
 			(event) => {
 
 
@@ -1930,10 +2368,13 @@
 				}
 
 
-				changeProject(-1);
+				changeProject(
+					-1
+				);
 
 
 			}
+
 		);
 
 
@@ -1961,7 +2402,9 @@
 		   ============================================================ */
 
 		rightButtonHitbox.addEventListener(
+
 			"pointerdown",
+
 			(event) => {
 
 
@@ -1985,10 +2428,13 @@
 				}
 
 
-				changeProject(1);
+				changeProject(
+					1
+				);
 
 
 			}
+
 		);
 
 
@@ -2016,7 +2462,9 @@
 		   ============================================================ */
 
 		powerButtonHitbox.addEventListener(
+
 			"pointerdown",
+
 			(event) => {
 
 
@@ -2038,6 +2486,7 @@
 
 
 			}
+
 		);
 
 
@@ -2047,17 +2496,11 @@
 		   ============================================================ */
 
 		document.addEventListener(
+
 			"keydown",
+
 			(event) => {
 
-
-				/*
-					M should toggle only once per physical key press.
-
-					P should toggle only once.
-
-					Arrow keys also ignore key-repeat as before.
-				*/
 
 				if (event.repeat) {
 					return;
@@ -2066,12 +2509,12 @@
 
 
 				/* ====================================================
-				   M = AMBIENT AUDIO ON / OFF
+				   M = AMBIENT AUDIO
 				   ==================================================== */
 
 				if (
 					event.key.toLowerCase() ===
-						"m"
+					"m"
 				) {
 
 
@@ -2088,12 +2531,12 @@
 
 
 				/* ====================================================
-				   P = PHYSICAL POWER BUTTON
+				   P = POWER
 				   ==================================================== */
 
 				if (
 					event.key.toLowerCase() ===
-						"p"
+					"p"
 				) {
 
 
@@ -2115,7 +2558,7 @@
 
 				if (
 					event.key ===
-						"ArrowLeft"
+					"ArrowLeft"
 				) {
 
 
@@ -2141,7 +2584,9 @@
 					playNextButtonSound();
 
 
-					changeProject(-1);
+					changeProject(
+						-1
+					);
 
 				}
 
@@ -2153,7 +2598,7 @@
 
 				if (
 					event.key ===
-						"ArrowRight"
+					"ArrowRight"
 				) {
 
 
@@ -2179,12 +2624,15 @@
 					playNextButtonSound();
 
 
-					changeProject(1);
+					changeProject(
+						1
+					);
 
 				}
 
 
 			}
+
 		);
 
 
@@ -2194,13 +2642,15 @@
 		   ============================================================ */
 
 		document.addEventListener(
+
 			"keyup",
+
 			(event) => {
 
 
 				if (
 					event.key ===
-						"ArrowLeft"
+					"ArrowLeft"
 				) {
 
 
@@ -2219,7 +2669,7 @@
 
 				if (
 					event.key ===
-						"ArrowRight"
+					"ArrowRight"
 				) {
 
 
@@ -2236,6 +2686,7 @@
 
 
 			}
+
 		);
 
 
@@ -2245,7 +2696,9 @@
 		   ============================================================ */
 
 		window.addEventListener(
+
 			"blur",
+
 			() => {
 
 
@@ -2262,7 +2715,9 @@
 
 				releaseRightButton();
 
+
 			}
+
 		);
 
 
